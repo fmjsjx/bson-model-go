@@ -8,24 +8,33 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-type IntSimpleMapModel interface {
+type IntObjectMapValueModel interface {
+	MapValueModel
+	setKey(key int)
+	Key() int
+}
+
+type IntObjectMapModel interface {
 	mapModel
 	Keys() []int
-	Get(key int) interface{}
-	Put(key int, value interface{}) interface{}
+	Get(key int) IntObjectMapValueModel
+	Put(key int, value IntObjectMapValueModel) IntObjectMapValueModel
 	Remove(key int) bool
 }
 
-type intSimpleMap struct {
-	baseSimpleMap
-	data map[int]interface{}
+type IntObjectMapValueFactory func() IntObjectMapValueModel
+
+type intObjectMap struct {
+	baseMap
+	valueFactory IntObjectMapValueFactory
+	data         map[int]IntObjectMapValueModel
 }
 
-func (imap *intSimpleMap) Size() int {
+func (imap *intObjectMap) Size() int {
 	return len(imap.data)
 }
 
-func (imap *intSimpleMap) Clear() {
+func (imap *intObjectMap) Clear() {
 	imap.updatedKeys.Clear()
 	removedKeys := imap.removedKeys
 	data := imap.data
@@ -37,7 +46,7 @@ func (imap *intSimpleMap) Clear() {
 	}
 }
 
-func (imap *intSimpleMap) Keys() []int {
+func (imap *intObjectMap) Keys() []int {
 	data := imap.data
 	keys := make([]int, len(data))
 	for k := range data {
@@ -46,7 +55,7 @@ func (imap *intSimpleMap) Keys() []int {
 	return keys
 }
 
-func (imap *intSimpleMap) Get(key int) interface{} {
+func (imap *intObjectMap) Get(key int) IntObjectMapValueModel {
 	value, ok := imap.data[key]
 	if ok {
 		return value
@@ -54,65 +63,75 @@ func (imap *intSimpleMap) Get(key int) interface{} {
 	return nil
 }
 
-func (imap *intSimpleMap) Put(key int, value interface{}) interface{} {
+func (imap *intObjectMap) Put(key int, value IntObjectMapValueModel) IntObjectMapValueModel {
 	data := imap.data
 	old, ok := data[key]
 	if ok {
 		if old != value {
 			data[key] = value
 			imap.updatedKeys.Add(key)
+			value.setKey(key)
+			value.setParent(imap)
+			value.SetFullyUpdate(true)
+			old.unbind()
 		}
 		return old
 	}
 	data[key] = value
 	imap.updatedKeys.Add(key)
 	imap.removedKeys.Remove(key)
+	value.setKey(key)
+	value.setParent(imap)
+	value.SetFullyUpdate(true)
 	return nil
 }
 
-func (imap *intSimpleMap) Remove(key int) bool {
+func (imap *intObjectMap) Remove(key int) bool {
 	data := imap.data
-	_, ok := data[key]
+	old, ok := data[key]
 	if ok {
 		delete(data, key)
 		imap.updatedKeys.Remove(key)
 		imap.removedKeys.Add(key)
+		old.unbind()
 		return true
 	}
 	return false
 }
 
-func (imap *intSimpleMap) ToBson() interface{} {
+func (imap *intObjectMap) ToBson() interface{} {
 	bson := bson.M{}
-	valueType := imap.valueType
 	for key, value := range imap.data {
-		bson[strconv.Itoa(key)] = valueType.ToBson(value)
+		bson[strconv.Itoa(key)] = value.ToBson()
 	}
 	return bson
 }
 
-func (imap *intSimpleMap) ToData() interface{} {
+func (imap *intObjectMap) ToData() interface{} {
 	data := make(map[int]interface{})
-	valueType := imap.valueType
 	for key, value := range imap.data {
-		data[key] = valueType.ToData(value)
+		data[key] = value.ToData()
 	}
 	return data
 }
 
-func (imap *intSimpleMap) Reset() {
+func (imap *intObjectMap) Reset() {
 	imap.updatedKeys.Clear()
 	imap.removedKeys.Clear()
+	for _, v := range imap.data {
+		v.Reset()
+	}
 }
 
-func (imap *intSimpleMap) LoadJsoniter(any jsoniter.Any) error {
+func (imap *intObjectMap) LoadJsoniter(any jsoniter.Any) error {
 	imap.Reset()
 	data := imap.data
-	for k := range data {
+	for k, v := range data {
+		v.unbind()
 		delete(data, k)
 	}
 	if any.ValueType() == jsoniter.ObjectValue {
-		valueType := imap.valueType
+		valueFactory := imap.valueFactory
 		keys := any.Keys()
 		for _, key := range keys {
 			k, err := strconv.Atoi(key)
@@ -120,17 +139,20 @@ func (imap *intSimpleMap) LoadJsoniter(any jsoniter.Any) error {
 				// skip key that not be an int
 				continue
 			}
-			v, err := valueType.ParseJsoniter(any.Get(key))
+			value := valueFactory()
+			err = value.LoadJsoniter(any.Get(key))
 			if err != nil {
 				return err
 			}
-			data[k] = v
+			data[k] = value
+			value.setParent(imap)
+			value.setKey(k)
 		}
 	}
 	return nil
 }
 
-func (imap *intSimpleMap) AppendUpdates(updates bson.M) bson.M {
+func (imap *intObjectMap) AppendUpdates(updates bson.M) bson.M {
 	data := imap.data
 	updatedKeys := imap.updatedKeys
 	if updatedKeys.Cardinality() > 0 {
@@ -138,14 +160,14 @@ func (imap *intSimpleMap) AppendUpdates(updates bson.M) bson.M {
 		if !ok {
 			dset = bson.M{}
 		}
-		valueType := imap.valueType
 		for _, uk := range updatedKeys.ToSlice() {
 			key := uk.(int)
 			value := data[key]
-			k := strconv.Itoa(key)
-			name := imap.XPath().Resolve(k)
-			v := valueType.ToBson(value)
-			dset[name.Value()] = v
+			if value.FullyUpdate() {
+				dset[value.XPath().Value()] = value.ToBson()
+			} else {
+				value.AppendUpdates(updates)
+			}
 		}
 	}
 	removedKeys := imap.removedKeys
@@ -164,31 +186,36 @@ func (imap *intSimpleMap) AppendUpdates(updates bson.M) bson.M {
 	return updates
 }
 
-func (imap *intSimpleMap) ToDocument() bson.M {
+func (imap *intObjectMap) ToDocument() bson.M {
 	doc := bson.M{}
-	valueType := imap.valueType
 	for k, v := range imap.data {
 		key := strconv.Itoa(k)
-		value := valueType.ToBson(v)
+		value := v.ToBson()
 		doc[key] = value
 	}
 	return doc
 }
 
-func (imap *intSimpleMap) LoadDocument(document bson.M) error {
+func (imap *intObjectMap) LoadDocument(document bson.M) error {
 	imap.Reset()
 	data := imap.data
 	for k := range data {
 		delete(data, k)
 	}
-	valueType := imap.valueType
+	valueFactory := imap.valueFactory
 	for key, value := range document {
 		k, err := strconv.Atoi(key)
 		if err != nil {
 			// skip key that not be an int
 			continue
 		}
-		v, err := valueType.Parse(value)
+		obj, ok := value.(bson.M)
+		if !ok {
+			// skip value that not be a bson.M
+			continue
+		}
+		v := valueFactory()
+		err = v.LoadDocument(obj)
 		if err != nil {
 			return err
 		}
@@ -197,13 +224,13 @@ func (imap *intSimpleMap) LoadDocument(document bson.M) error {
 	return nil
 }
 
-func NewIntSimpleMapModel(parent BsonModel, name string, valueType SimpleValueType) IntSimpleMapModel {
-	mapModel := &intSimpleMap{}
+func NewIntObjectMapModel(parent BsonModel, name string, valueFactory IntObjectMapValueFactory) IntObjectMapModel {
+	mapModel := &intObjectMap{}
 	mapModel.parent = parent
 	mapModel.name = name
 	mapModel.updatedKeys = mapset.NewThreadUnsafeSet()
 	mapModel.removedKeys = mapset.NewThreadUnsafeSet()
-	mapModel.valueType = valueType
-	mapModel.data = make(map[int]interface{})
+	mapModel.valueFactory = valueFactory
+	mapModel.data = make(map[int]IntObjectMapValueModel)
 	return mapModel
 }

@@ -56,4 +56,5 @@ func main() {
 		fmt.Printf("k: %d, v: %d\n", k, v)
 	}
 	delete(doc, 1)
+
 }

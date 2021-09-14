@@ -134,9 +134,10 @@ func (smap *stringSimpleMap) AppendUpdates(updates bson.M) bson.M {
 		valueType := smap.valueType
 		for _, uk := range updatedKeys.ToSlice() {
 			key := uk.(string)
+			name := smap.XPath().Resolve(key)
 			value := data[key]
 			v := valueType.ToBson(value)
-			dset[key] = v
+			dset[name.Value()] = v
 		}
 	}
 	removedKeys := smap.removedKeys
@@ -181,7 +182,7 @@ func (smap *stringSimpleMap) LoadDocument(document bson.M) error {
 	return nil
 }
 
-func NewStringSimpleMapModel(parent MongoModel, name string, valueType SimpleValueType) StringSimpleMapModel {
+func NewStringSimpleMapModel(parent BsonModel, name string, valueType SimpleValueType) StringSimpleMapModel {
 	mapModel := &stringSimpleMap{}
 	mapModel.parent = parent
 	mapModel.name = name

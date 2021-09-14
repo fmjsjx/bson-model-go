@@ -7,33 +7,50 @@ import (
 )
 
 // The top interface for BSON model.
-type MongoModel interface {
+type BsonModel interface {
 	ToBson() interface{}
 	ToData() interface{}
 	LoadJsoniter(any jsoniter.Any) error
 	Reset()
 	AnyUpdated() bool
 	AnyDeleted() bool
-	Parent() MongoModel
+	Parent() BsonModel
 	XPath() DotNotation
 	AppendUpdates(updates bson.M) bson.M
 }
 
-type ObjectModel interface {
-	MongoModel
+type DocumentModel interface {
+	BsonModel
 	ToDocument() bson.M
 	LoadDocument(document bson.M) error
 	DeletedSize() int
 }
 
-type mapModel interface {
+type ObjectModel interface {
+	DocumentModel
+	FullyUpdate() bool
+	SetFullyUpdate(fullyUpdate bool)
+}
+
+type RootModel interface {
 	ObjectModel
+	ToUpdate() bson.M
+}
+
+type MapValueModel interface {
+	ObjectModel
+	setParent(parent BsonModel)
+	unbind()
+}
+
+type mapModel interface {
+	DocumentModel
 	Size() int
 	Clear()
 }
 
 type baseMap struct {
-	parent      MongoModel
+	parent      BsonModel
 	name        string
 	updatedKeys mapset.Set
 	removedKeys mapset.Set
@@ -47,7 +64,7 @@ func (smap *baseMap) AnyDeleted() bool {
 	return smap.DeletedSize() > 0
 }
 
-func (smap *baseMap) Parent() MongoModel {
+func (smap *baseMap) Parent() BsonModel {
 	return smap.parent
 }
 
