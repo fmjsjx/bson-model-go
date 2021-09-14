@@ -2,15 +2,15 @@ module github.com/fmjsjx/bson-model-go
 
 go 1.17
 
-require go.mongodb.org/mongo-driver v1.7.2
+require (
+	github.com/deckarep/golang-set v1.7.1
+	github.com/json-iterator/go v1.1.11
+	go.mongodb.org/mongo-driver v1.7.2
+)
 
 require (
-	github.com/StudioSol/set v0.0.0-20201016135106-b6b7c377f1d2 // indirect
-	github.com/bits-and-blooms/bitset v1.2.1 // indirect
-	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/klauspost/compress v1.9.5 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 // indirect
