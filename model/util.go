@@ -3,6 +3,9 @@ package model
 import (
 	"strconv"
 	"strings"
+	"time"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 // DotNotation defines BSON dot notation.
@@ -62,4 +65,37 @@ func PathOfNames(base string, names ...string) DotNotation {
 
 func PathOf(base DotNotation, names ...string) DotNotation {
 	return PathOfNames(base.Value(), names...)
+}
+
+func valueTypeName(valueType jsoniter.ValueType) string {
+	switch valueType {
+	case jsoniter.InvalidValue:
+		return "INVALID"
+	case jsoniter.StringValue:
+		return "STRING"
+	case jsoniter.NumberValue:
+		return "NUMBER"
+	case jsoniter.NilValue:
+		return "NULL"
+	case jsoniter.BoolValue:
+		return "BOOLEAN"
+	case jsoniter.ArrayValue:
+		return "ARRAY"
+	case jsoniter.ObjectValue:
+		return "OBJECT"
+	default:
+		return "UNKNOWN"
+	}
+}
+
+func numberToDate(num int) time.Time {
+	year := num / 10000
+	month := num / 100 % 100
+	day := num % 100
+	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.Local)
+}
+
+func dateToNumber(date time.Time) int {
+	year, month, day := date.Date()
+	return year*10000 + int(month)*100 + day
 }
