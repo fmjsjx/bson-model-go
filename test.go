@@ -6,11 +6,17 @@ import (
 	"log"
 	"time"
 
+	"github.com/fmjsjx/bson-model-go/model"
+	jsoniter "github.com/json-iterator/go"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+type Player struct {
+}
 
 func main() {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://10.7.125.140:27017"))
@@ -57,4 +63,27 @@ func main() {
 	}
 	delete(doc, 1)
 
+	imap := model.NewIntSimpleMapModel(nil, "test", model.IntValueType())
+	imap.Put(1, 101)
+	imap.Put(2, 102)
+	imap.Put(3, 103)
+	fmt.Printf("imap: %v\n", imap)
+	json, err := jsoniter.MarshalToString(imap)
+	if err == nil {
+		fmt.Printf("imap: %s\n", json)
+	} else {
+		fmt.Printf("failed: %e\n", err)
+	}
+
+	smap := model.NewStringSimpleMapModel(nil, "test2", model.IntValueType())
+	smap.Put("a", 101)
+	smap.Put("b", 102)
+	smap.Put("c", 103)
+	fmt.Printf("smap: %v\n", smap)
+	json, err = jsoniter.MarshalToString(smap)
+	if err == nil {
+		fmt.Printf("smap: %s\n", json)
+	} else {
+		fmt.Printf("failed: %e\n", err)
+	}
 }
