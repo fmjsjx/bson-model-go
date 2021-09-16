@@ -6,11 +6,9 @@ import (
 	"reflect"
 	"strconv"
 	"time"
-	"unsafe"
 
 	mapset "github.com/deckarep/golang-set"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/modern-go/reflect2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -265,6 +263,10 @@ type intSimpleMap struct {
 	data map[int]interface{}
 }
 
+func (imap *intSimpleMap) MarshalJSON() ([]byte, error) {
+	return jsoniter.Marshal(imap.data)
+}
+
 func (imap *intSimpleMap) Size() int {
 	return len(imap.data)
 }
@@ -465,6 +467,10 @@ type stringSimpleMap struct {
 	data map[string]interface{}
 }
 
+func (smap *stringSimpleMap) MarshalJSON() ([]byte, error) {
+	return jsoniter.Marshal(smap.data)
+}
+
 func (smap *stringSimpleMap) Size() int {
 	return len(smap.data)
 }
@@ -637,52 +643,4 @@ func NewStringSimpleMapModel(parent BsonModel, name string, valueType SimpleValu
 	mapModel.valueType = valueType
 	mapModel.data = make(map[string]interface{})
 	return mapModel
-}
-
-type intSimpleMapEncoder struct{}
-
-func (codec *intSimpleMapEncoder) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
-	imap := *((**intSimpleMap)(ptr))
-	stream.WriteVal(imap.data)
-}
-
-func (codec *intSimpleMapEncoder) IsEmpty(ptr unsafe.Pointer) bool {
-	imap := *((**intSimpleMap)(ptr))
-	return len(imap.data) == 0
-}
-
-type stringSimpleMapEncoder struct{}
-
-func (codec *stringSimpleMapEncoder) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
-	imap := *((**stringSimpleMap)(ptr))
-	stream.WriteVal(imap.data)
-}
-
-func (codec *stringSimpleMapEncoder) IsEmpty(ptr unsafe.Pointer) bool {
-	imap := *((**stringSimpleMap)(ptr))
-	return len(imap.data) == 0
-}
-
-type simpleMapExtension struct {
-	jsoniter.DummyExtension
-	intEncoder    jsoniter.ValEncoder
-	stringEncoder jsoniter.ValEncoder
-}
-
-func (e *simpleMapExtension) CreateEncoder(typ reflect2.Type) jsoniter.ValEncoder {
-	if typ.LikePtr() {
-		switch typ.String() {
-		case "*model.intSimpleMap":
-			return e.intEncoder
-		case "*model.stringSimpleMap":
-			return e.stringEncoder
-		default:
-			return nil
-		}
-	}
-	return nil
-}
-
-func init() {
-	jsoniter.RegisterExtension(&simpleMapExtension{intEncoder: &intSimpleMapEncoder{}, stringEncoder: &stringSimpleMapEncoder{}})
 }

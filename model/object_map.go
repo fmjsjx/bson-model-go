@@ -2,11 +2,9 @@ package model
 
 import (
 	"strconv"
-	"unsafe"
 
 	mapset "github.com/deckarep/golang-set"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/modern-go/reflect2"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -30,6 +28,10 @@ type intObjectMap struct {
 	baseMap
 	valueFactory IntObjectMapValueFactory
 	data         map[int]IntObjectMapValueModel
+}
+
+func (imap *intObjectMap) MarshalJSON() ([]byte, error) {
+	return jsoniter.Marshal(imap.data)
 }
 
 func (imap *intObjectMap) Size() int {
@@ -259,6 +261,10 @@ type stringObjectMap struct {
 	data         map[string]StringObjectMapValueModel
 }
 
+func (smap *stringObjectMap) MarshalJSON() ([]byte, error) {
+	return jsoniter.Marshal(smap.data)
+}
+
 func (imap *stringObjectMap) Size() int {
 	return len(imap.data)
 }
@@ -450,52 +456,4 @@ func NewStringObjectMapModel(parent BsonModel, name string, valueFactory StringO
 	mapModel.valueFactory = valueFactory
 	mapModel.data = make(map[string]StringObjectMapValueModel)
 	return mapModel
-}
-
-type intObjectMapEncoder struct{}
-
-func (codec *intObjectMapEncoder) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
-	imap := *((**intObjectMap)(ptr))
-	stream.WriteVal(imap.data)
-}
-
-func (codec *intObjectMapEncoder) IsEmpty(ptr unsafe.Pointer) bool {
-	imap := *((**intObjectMap)(ptr))
-	return len(imap.data) == 0
-}
-
-type stringObjectMapEncoder struct{}
-
-func (codec *stringObjectMapEncoder) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
-	imap := *((**stringObjectMap)(ptr))
-	stream.WriteVal(imap.data)
-}
-
-func (codec *stringObjectMapEncoder) IsEmpty(ptr unsafe.Pointer) bool {
-	imap := *((**stringObjectMap)(ptr))
-	return len(imap.data) == 0
-}
-
-type objectMapExtension struct {
-	jsoniter.DummyExtension
-	intEncoder    jsoniter.ValEncoder
-	stringEncoder jsoniter.ValEncoder
-}
-
-func (e *objectMapExtension) CreateEncoder(typ reflect2.Type) jsoniter.ValEncoder {
-	if typ.LikePtr() {
-		switch typ.String() {
-		case "*model.intObjectMap":
-			return e.intEncoder
-		case "*model.stringObjectMap":
-			return e.stringEncoder
-		default:
-			return nil
-		}
-	}
-	return nil
-}
-
-func init() {
-	jsoniter.RegisterExtension(&simpleMapExtension{intEncoder: &intObjectMapEncoder{}, stringEncoder: &stringObjectMapEncoder{}})
 }

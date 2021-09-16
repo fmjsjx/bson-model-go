@@ -68,6 +68,7 @@ func main() {
 	imap.Put(2, 102)
 	imap.Put(3, 103)
 	fmt.Printf("imap: %v\n", imap)
+	// api := jsoniter.ConfigCompatibleWithStandardLibrary
 	json, err := jsoniter.MarshalToString(imap)
 	if err == nil {
 		fmt.Printf("imap: %s\n", json)
