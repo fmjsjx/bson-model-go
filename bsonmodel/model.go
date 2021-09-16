@@ -1,4 +1,4 @@
-package model
+package bsonmodel
 
 import (
 	mapset "github.com/deckarep/golang-set"

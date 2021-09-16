@@ -6,8 +6,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/fmjsjx/bson-model-go/model"
+	"github.com/fmjsjx/bson-model-go/bsonmodel"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/modern-go/reflect2"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -63,7 +64,7 @@ func main() {
 	}
 	delete(doc, 1)
 
-	imap := model.NewIntSimpleMapModel(nil, "test", model.IntValueType())
+	imap := bsonmodel.NewIntSimpleMapModel(nil, "test", bsonmodel.IntValueType())
 	imap.Put(1, 101)
 	imap.Put(2, 102)
 	imap.Put(3, 103)
@@ -76,7 +77,7 @@ func main() {
 		fmt.Printf("failed: %e\n", err)
 	}
 
-	smap := model.NewStringSimpleMapModel(nil, "test2", model.IntValueType())
+	smap := bsonmodel.NewStringSimpleMapModel(nil, "test2", bsonmodel.IntValueType())
 	smap.Put("a", 101)
 	smap.Put("b", 102)
 	smap.Put("c", 103)
@@ -87,4 +88,11 @@ func main() {
 	} else {
 		fmt.Printf("failed: %e\n", err)
 	}
+
+	cacheKey := reflect2.RTypeOf(imap)
+	fmt.Printf("cacheKey: %v", cacheKey)
+
+	stream := jsoniter.ConfigDefault.BorrowStream(nil)
+	defer jsoniter.ConfigDefault.ReturnStream(stream)
+	stream.WriteVal(smap)
 }

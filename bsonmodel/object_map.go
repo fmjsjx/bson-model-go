@@ -1,7 +1,8 @@
-package model
+package bsonmodel
 
 import (
 	"strconv"
+	"unsafe"
 
 	mapset "github.com/deckarep/golang-set"
 	jsoniter "github.com/json-iterator/go"
@@ -28,10 +29,6 @@ type intObjectMap struct {
 	baseMap
 	valueFactory IntObjectMapValueFactory
 	data         map[int]IntObjectMapValueModel
-}
-
-func (imap *intObjectMap) MarshalJSON() ([]byte, error) {
-	return jsoniter.Marshal(imap.data)
 }
 
 func (imap *intObjectMap) Size() int {
@@ -261,10 +258,6 @@ type stringObjectMap struct {
 	data         map[string]StringObjectMapValueModel
 }
 
-func (smap *stringObjectMap) MarshalJSON() ([]byte, error) {
-	return jsoniter.Marshal(smap.data)
-}
-
 func (imap *stringObjectMap) Size() int {
 	return len(imap.data)
 }
@@ -456,4 +449,33 @@ func NewStringObjectMapModel(parent BsonModel, name string, valueFactory StringO
 	mapModel.valueFactory = valueFactory
 	mapModel.data = make(map[string]StringObjectMapValueModel)
 	return mapModel
+}
+
+type intObjectMapEncoder struct{}
+
+func (codec *intObjectMapEncoder) IsEmpty(ptr unsafe.Pointer) bool {
+	imap := ((*intObjectMap)(ptr))
+	return len(imap.data) == 0
+}
+
+func (codec *intObjectMapEncoder) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
+	imap := ((*intObjectMap)(ptr))
+	stream.WriteVal(imap.data)
+}
+
+type stringObjectMapEncoder struct{}
+
+func (codec *stringObjectMapEncoder) IsEmpty(ptr unsafe.Pointer) bool {
+	smap := ((*stringObjectMap)(ptr))
+	return len(smap.data) == 0
+}
+
+func (codec *stringObjectMapEncoder) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
+	smap := ((*stringObjectMap)(ptr))
+	stream.WriteVal(smap.data)
+}
+
+func init() {
+	jsoniter.RegisterTypeEncoder("bsonmodel.intObjectMap", &intObjectMapEncoder{})
+	jsoniter.RegisterTypeEncoder("bsonmodel.stringObjectMap", &stringObjectMapEncoder{})
 }
