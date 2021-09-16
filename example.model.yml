@@ -1,0 +1,370 @@
+package: example
+
+objects:
+- name: Player
+  type: root
+  fields:
+  - name: uid
+    bname: _id
+    type: int
+    required: true
+  - name: preferences
+    bname: pfc
+    type: object
+    model: PreferencesInfo
+  - name: basic
+    bname: bsc
+    type: object
+    model: BasicInfo
+  - name: login
+    bname: lgn
+    type: object
+    model: LoginInfo
+  - name: guide
+    bname: gd
+    type: object
+    model: GuideInfo
+  - name: wallet
+    bname: wlt
+    type: object
+    model: WalletInfo
+  - name: items
+    bname: itm
+    type: simple-map
+    key: int
+    value: int
+  - name: videos
+    bname: vds
+    type: object
+    model: VideosInfo
+  - name: cattleRoping
+    bname: ctr
+    type: object
+    model: CattleRopingInfo
+  - name: daily
+    bname: dly
+    type: object
+    model: DailyInfo
+  - name: cash
+    bname: csh
+    type: object
+    model: CashInfo
+    json-ignore: true
+  - name: cashStages
+    bname: css
+    type: map
+    key: int
+    value: CashStageInfo
+  - name: scoreBonus
+    bname: scb
+    type: object
+    model: ScoreBonusInfo
+  - name: scoreBonusQuests
+    bname: sbq
+    type: map
+    key: int
+    value: ScoreBonusQuest
+  - name: updateVersion
+    bname: _uv
+    type: int
+    increase: true
+    json-ignore: true
+  - name: createTime
+    bname: _ct
+    type: datetime
+    json-ignore: true
+  - name: updateTime
+    bname: _ut
+    type: datetime
+    json-ignore: true
+- name: PreferencesInfo
+  type: object
+  fields:
+  - name: custom
+    bname: ctm
+    type: string
+- name: BasicInfo
+  type: object
+  fields:
+  - name: nickname
+    bname: nn
+    type: string
+  - name: faceId
+    bname: fi
+    type: int
+  - name: faceUrl
+    bname: fu
+    type: string
+- name: LoginInfo
+  type: object
+  fields:
+  - name: count
+    bname: cnt
+    type: int
+    increase: true
+  - name: days
+    bname: d
+    type: int
+    increase: true
+  - name: continuousDays
+    bname: cnd
+    type: int
+    increase: true
+  - name: maxContinuousDays
+    bname: mcd
+    type: int
+  - name: gamingDays
+    bname: gmd
+    type: int
+    increase: true
+  - name: maxGamingDays
+    bname: mgd
+    type: int
+  - name: ip
+    type: string
+  - name: loginTime
+    bname: lgt
+    type: datetime
+    json-ignore: true
+- name: GuideInfo
+  type: object
+  fields:
+  - name: status
+    bname: s
+    type: int
+- name: WalletInfo
+  type: object
+  fields:
+  - name: coinTotal
+    bname: ct
+    type: int
+    add: true
+  - name: coinUsed
+    bname: cu
+    type: int
+    add: true
+    json-ignore: true
+  - name: coin
+    virtual: true
+    type: int
+    sources: [coinTotal, coinUsed]
+    formula: coinTotal - coinUsed
+  - name: diamond
+    bname: d
+    type: int
+    add: true
+  - name: ropeTotal
+    bname: rpt
+    type: int
+    add: true
+  - name: ropeUsed
+    bname: rpu
+    type: int
+    add: true
+    json-ignore: true
+  - name: rope
+    virtual: true
+    type: int
+    sources: [ropeTotal, ropeUsed]
+    formula: ropeTotal - ropeUsed
+- name: VideosInfo
+  type: object
+  fields:
+  - name: count
+    bname: cnt
+    type: int
+    increase: true
+  - name: counts
+    bname: cns
+    type: simple-map
+    key: int
+    value: int
+    json-ignore: true
+- name: CattleRopingInfo
+  type: object
+  fields:
+  - name: id
+    type: int
+    json-ignore: true
+  - name: prevId
+    bname: pid
+    type: int
+    json-ignore: true
+  - name: cattles
+    bname: cts
+    type: simple-list
+    value: int
+    json-ignore: true
+  - name: gotbits
+    bname: gbs
+    type: int
+    json-ignore: true
+  - name: replaceId
+    bname: rpi
+    type: int
+    json-ignore: true
+  - name: triple
+    bname: trp
+    type: int
+    json-ignore: true
+  - name: score
+    bname: scr
+    type: int
+    json-ignore: true
+  - name: coin
+    bname: cn
+    type: int
+    json-ignore: true
+  - name: ropingTotal
+    bname: rpt
+    type: int
+    increase: true
+  - name: cattleTotal
+    bname: ctt
+    type: int
+    add: true
+  - name: gotTotal
+    bname: gtt
+    type: int
+    increase: true
+  - name: tripleTotal
+    bname: trt
+    type: int
+    increase: true
+- name: DailyInfo
+  type: object
+  fields:
+  - name: day
+    type: date
+    json-ignore: true
+    required: true
+  - name: coin
+    bname: cn
+    type: int
+    add: true
+  - name: diamond
+    bname: dm
+    type: int
+    add: true
+  - name: roping
+    bname: rpg
+    type: int
+    increase: true
+  - name: triple
+    bname: tpl
+    type: int
+    increase: true
+  - name: cattle
+    bname: ctl
+    type: int
+    add: true
+  - name: videoCount
+    bname: vdc
+    type: int
+    increase: true
+  - name: videoCounts
+    bname: vdcs
+    type: simple-map
+    json-ignore: true
+    key: int
+    value: int
+  - name: cashCount
+    bname: csc
+    type: int
+    increase: true
+  - name: cashLimit
+    bname: csl
+    type: int
+  - name: cashRemaining
+    type: int
+    virtual: true
+    sources: [cashCount, cashLimit]
+    formula: cashLimit - cashCount
+- name: CashInfo
+  type: object
+  fields:
+  - name: stageVersion
+    bname: stv
+    type: int
+  - name: cashDays
+    bname: cds
+    type: int
+    increase: true
+- name: CashStageInfo
+  type: map-value
+  key: int
+  fields:
+  - name: id
+    type: int
+  - name: amount
+    bname: amt
+    type: int
+  - name: progress
+    bname: pgs
+    type: int
+  - name: max
+    type: int
+  - name: status
+    bname: sts
+    type: int
+  - name: days
+    bname: dys
+    type: int
+  - name: locked
+    bname: lck
+    type: int
+  methods:
+  - name: IsLocked
+    type: bool
+    formula: locked == 1
+- name: ScoreBonusInfo
+  type: object
+  fields:
+  - name: stageId
+    bname: sid
+    type: int
+    json-ignore: true
+  - name: amount
+    bname: amt
+    type: int
+  - name: status
+    bname: sts
+    type: int
+  - name: progress
+    bname: pgs
+    type: int
+  - name: max
+    type: int
+- name: ScoreBonusQuest
+  type: map-value
+  key: int
+  fields:
+  - name: stageId
+    bname: sid
+    type: int
+  - name: status
+    bname: sts
+    type: int
+  - name: amount
+    bname: amt
+    type: int
+  - name: score
+    bname: scr
+    type: int
+  - name: dailyCattles
+    bname: dcs
+    type: simple-list
+    value: int
+  - name: days
+    bname: dys
+    type: int
+  - name: day
+    type: int
+    increase: true
+  - name: cattleCount
+    bname: ctc
+    type: int
+    add: true
+  - name: videoCount
+    bname: vdc
+    type: int
