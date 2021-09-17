@@ -326,12 +326,7 @@ func (imap *intSimpleMap) Remove(key int) bool {
 }
 
 func (imap *intSimpleMap) ToBson() interface{} {
-	bson := bson.M{}
-	valueType := imap.valueType
-	for key, value := range imap.data {
-		bson[strconv.Itoa(key)] = valueType.ToBson(value)
-	}
-	return bson
+	return imap.ToDocument()
 }
 
 func (imap *intSimpleMap) ToData() interface{} {
@@ -377,10 +372,7 @@ func (imap *intSimpleMap) AppendUpdates(updates bson.M) bson.M {
 	data := imap.data
 	updatedKeys := imap.updatedKeys
 	if updatedKeys.Cardinality() > 0 {
-		dset, ok := updates["$set"].(bson.M)
-		if !ok {
-			dset = bson.M{}
-		}
+		dset := FixedEmbedded(updates, "$set")
 		valueType := imap.valueType
 		for _, uk := range updatedKeys.ToSlice() {
 			key := uk.(int)
@@ -393,10 +385,7 @@ func (imap *intSimpleMap) AppendUpdates(updates bson.M) bson.M {
 	}
 	removedKeys := imap.removedKeys
 	if removedKeys.Cardinality() > 0 {
-		unset, ok := updates["$unset"].(bson.M)
-		if !ok {
-			unset = bson.M{}
-		}
+		unset := FixedEmbedded(updates, "$unset")
 		for _, uk := range removedKeys.ToSlice() {
 			key := uk.(int)
 			k := strconv.Itoa(key)
@@ -526,12 +515,7 @@ func (smap *stringSimpleMap) Remove(key string) bool {
 }
 
 func (smap *stringSimpleMap) ToBson() interface{} {
-	bson := bson.M{}
-	valueType := smap.valueType
-	for key, value := range smap.data {
-		bson[key] = valueType.ToBson(value)
-	}
-	return bson
+	return smap.ToDocument()
 }
 
 func (smap *stringSimpleMap) ToData() interface{} {
@@ -572,10 +556,7 @@ func (smap *stringSimpleMap) AppendUpdates(updates bson.M) bson.M {
 	data := smap.data
 	updatedKeys := smap.updatedKeys
 	if updatedKeys.Cardinality() > 0 {
-		dset, ok := updates["$set"].(bson.M)
-		if !ok {
-			dset = bson.M{}
-		}
+		dset := FixedEmbedded(updates, "$set")
 		valueType := smap.valueType
 		for _, uk := range updatedKeys.ToSlice() {
 			key := uk.(string)
@@ -587,10 +568,7 @@ func (smap *stringSimpleMap) AppendUpdates(updates bson.M) bson.M {
 	}
 	removedKeys := smap.removedKeys
 	if removedKeys.Cardinality() > 0 {
-		unset, ok := updates["$unset"].(bson.M)
-		if !ok {
-			unset = bson.M{}
-		}
+		unset := FixedEmbedded(updates, "$unset")
 		for _, uk := range removedKeys.ToSlice() {
 			key := uk.(string)
 			name := smap.XPath().Resolve(key)

@@ -43,6 +43,14 @@ type MapValueModel interface {
 	unbind()
 }
 
+type baseMapValue struct {
+	parent BsonModel
+}
+
+func (v *baseMapValue) setParent(parent BsonModel) {
+	v.parent = parent
+}
+
 type mapModel interface {
 	DocumentModel
 	Size() int
@@ -57,7 +65,7 @@ type baseMap struct {
 }
 
 func (smap *baseMap) AnyUpdated() bool {
-	return smap.updatedKeys.Cardinality() > 0
+	return smap.updatedKeys.Cardinality() > 0 || smap.AnyDeleted()
 }
 
 func (smap *baseMap) AnyDeleted() bool {

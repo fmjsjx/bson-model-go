@@ -6,9 +6,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/bits-and-blooms/bitset"
 	"github.com/fmjsjx/bson-model-go/bsonmodel"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/modern-go/reflect2"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -89,10 +89,33 @@ func main() {
 		fmt.Printf("failed: %e\n", err)
 	}
 
-	cacheKey := reflect2.RTypeOf(imap)
-	fmt.Printf("cacheKey: %v", cacheKey)
+	b := &bitset.BitSet{}
+	fmt.Printf("b.Len() => %v\n", b.Len())
+	fmt.Printf("b => %v\n", b)
+	fmt.Printf("b.0 => %v\n", b.Test(0))
+	b.Set(0)
+	fmt.Printf("b.Len() => %v\n", b.Len())
+	fmt.Printf("b => %v\n", b)
+	fmt.Printf("b.0 => %v\n", b.Test(0))
+	b.DeleteAt(0)
+	fmt.Printf("b.Len() => %v\n", b.Len())
+	fmt.Printf("b => %v\n", b)
+	fmt.Printf("b.0 => %v\n", b.Test(0))
+	b.Set(2)
+	b.Set(3)
+	fmt.Printf("b.Len() => %v\n", b.Len())
+	fmt.Printf("b => %v\n", b)
+	b.ClearAll()
+	fmt.Printf("b.None() => %v\n", b.None())
+	fmt.Printf("b.Len() => %v\n", b.Len())
+	fmt.Printf("b => %v\n", b)
+	fmt.Printf("b.Len() => %v\n", b.Len())
+	b.DeleteAt(0)
+	fmt.Printf("b.Len() => %v\n", b.Len())
+	iii := bson.M{"cu": int32(1), "xxx": "yyy"}
+	coinTotal := iii["ct"]
+	if coinTotal == nil {
+		fmt.Println(0)
+	}
 
-	stream := jsoniter.ConfigDefault.BorrowStream(nil)
-	defer jsoniter.ConfigDefault.ReturnStream(stream)
-	stream.WriteVal(smap)
 }

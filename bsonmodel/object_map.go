@@ -15,12 +15,43 @@ type IntObjectMapValueModel interface {
 	Key() int
 }
 
+type BaseIntObjectMapValue struct {
+	baseMapValue
+	key int
+}
+
+func (v *BaseIntObjectMapValue) Parent() BsonModel {
+	return v.parent
+}
+
+func (v *BaseIntObjectMapValue) XPath() DotNotation {
+	return v.parent.XPath().Resolve(strconv.Itoa(v.key))
+}
+
+func (v *BaseIntObjectMapValue) setParent(parent BsonModel) {
+	v.parent = parent
+}
+
+func (v *BaseIntObjectMapValue) unbind() {
+	v.parent = nil
+	v.key = 0
+}
+
+func (v *BaseIntObjectMapValue) setKey(key int) {
+	v.key = key
+}
+
+func (v *BaseIntObjectMapValue) Key() int {
+	return v.key
+}
+
 type IntObjectMapModel interface {
 	mapModel
 	Keys() []int
 	Get(key int) IntObjectMapValueModel
 	Put(key int, value IntObjectMapValueModel) IntObjectMapValueModel
 	Remove(key int) bool
+	SetUpdated(key string)
 }
 
 type IntObjectMapValueFactory func() IntObjectMapValueModel
@@ -100,12 +131,12 @@ func (imap *intObjectMap) Remove(key int) bool {
 	return false
 }
 
+func (imap *intObjectMap) SetUpdated(key string) {
+	imap.updatedKeys.Add(key)
+}
+
 func (imap *intObjectMap) ToBson() interface{} {
-	bson := bson.M{}
-	for key, value := range imap.data {
-		bson[strconv.Itoa(key)] = value.ToBson()
-	}
-	return bson
+	return imap.ToDocument()
 }
 
 func (imap *intObjectMap) ToData() interface{} {
@@ -117,11 +148,12 @@ func (imap *intObjectMap) ToData() interface{} {
 }
 
 func (imap *intObjectMap) Reset() {
+	data := imap.data
+	for _, k := range imap.updatedKeys.ToSlice() {
+		data[k.(int)].Reset()
+	}
 	imap.updatedKeys.Clear()
 	imap.removedKeys.Clear()
-	for _, v := range imap.data {
-		v.Reset()
-	}
 }
 
 func (imap *intObjectMap) LoadJsoniter(any jsoniter.Any) error {
@@ -238,8 +270,38 @@ func NewIntObjectMapModel(parent BsonModel, name string, valueFactory IntObjectM
 
 type StringObjectMapValueModel interface {
 	MapValueModel
-	setKey(key string)
 	Key() string
+	setKey(key string)
+}
+
+type BaseStringObjectMapValue struct {
+	baseMapValue
+	key string
+}
+
+func (v *BaseStringObjectMapValue) Parent() BsonModel {
+	return v.parent
+}
+
+func (v *BaseStringObjectMapValue) XPath() DotNotation {
+	return v.parent.XPath().Resolve(v.key)
+}
+
+func (v *BaseStringObjectMapValue) setParent(parent BsonModel) {
+	v.parent = parent
+}
+
+func (v *BaseStringObjectMapValue) unbind() {
+	v.parent = nil
+	v.key = ""
+}
+
+func (v *BaseStringObjectMapValue) setKey(key string) {
+	v.key = key
+}
+
+func (v *BaseStringObjectMapValue) Key() string {
+	return v.key
 }
 
 type StringObjectMapModel interface {
@@ -248,6 +310,7 @@ type StringObjectMapModel interface {
 	Get(key string) StringObjectMapValueModel
 	Put(key string, value StringObjectMapValueModel) StringObjectMapValueModel
 	Remove(key string) bool
+	SetUpdated(key string)
 }
 
 type StringObjectMapValueFactory func() StringObjectMapValueModel
@@ -258,14 +321,14 @@ type stringObjectMap struct {
 	data         map[string]StringObjectMapValueModel
 }
 
-func (imap *stringObjectMap) Size() int {
-	return len(imap.data)
+func (smap *stringObjectMap) Size() int {
+	return len(smap.data)
 }
 
-func (imap *stringObjectMap) Clear() {
-	imap.updatedKeys.Clear()
-	removedKeys := imap.removedKeys
-	data := imap.data
+func (smap *stringObjectMap) Clear() {
+	smap.updatedKeys.Clear()
+	removedKeys := smap.removedKeys
+	data := smap.data
 	for k := range data {
 		removedKeys.Add(k)
 	}
@@ -274,8 +337,8 @@ func (imap *stringObjectMap) Clear() {
 	}
 }
 
-func (imap *stringObjectMap) Keys() []string {
-	data := imap.data
+func (smap *stringObjectMap) Keys() []string {
+	data := smap.data
 	keys := make([]string, len(data))
 	for k := range data {
 		keys = append(keys, k)
@@ -283,83 +346,84 @@ func (imap *stringObjectMap) Keys() []string {
 	return keys
 }
 
-func (imap *stringObjectMap) Get(key string) StringObjectMapValueModel {
-	value, ok := imap.data[key]
+func (smap *stringObjectMap) Get(key string) StringObjectMapValueModel {
+	value, ok := smap.data[key]
 	if ok {
 		return value
 	}
 	return nil
 }
 
-func (imap *stringObjectMap) Put(key string, value StringObjectMapValueModel) StringObjectMapValueModel {
-	data := imap.data
+func (smap *stringObjectMap) Put(key string, value StringObjectMapValueModel) StringObjectMapValueModel {
+	data := smap.data
 	old, ok := data[key]
 	if ok {
 		if old != value {
 			data[key] = value
-			imap.updatedKeys.Add(key)
+			smap.updatedKeys.Add(key)
 			value.setKey(key)
-			value.setParent(imap)
+			value.setParent(smap)
 			value.SetFullyUpdate(true)
 			old.unbind()
 		}
 		return old
 	}
 	data[key] = value
-	imap.updatedKeys.Add(key)
-	imap.removedKeys.Remove(key)
+	smap.updatedKeys.Add(key)
+	smap.removedKeys.Remove(key)
 	value.setKey(key)
-	value.setParent(imap)
+	value.setParent(smap)
 	value.SetFullyUpdate(true)
 	return nil
 }
 
-func (imap *stringObjectMap) Remove(key string) bool {
-	data := imap.data
+func (smap *stringObjectMap) Remove(key string) bool {
+	data := smap.data
 	old, ok := data[key]
 	if ok {
 		delete(data, key)
-		imap.updatedKeys.Remove(key)
-		imap.removedKeys.Add(key)
+		smap.updatedKeys.Remove(key)
+		smap.removedKeys.Add(key)
 		old.unbind()
 		return true
 	}
 	return false
 }
 
-func (imap *stringObjectMap) ToBson() interface{} {
-	bson := bson.M{}
-	for key, value := range imap.data {
-		bson[key] = value.ToBson()
-	}
-	return bson
+func (smap *stringObjectMap) SetUpdated(key string) {
+	smap.updatedKeys.Add(key)
 }
 
-func (imap *stringObjectMap) ToData() interface{} {
+func (smap *stringObjectMap) ToBson() interface{} {
+	return smap.ToDocument()
+}
+
+func (smap *stringObjectMap) ToData() interface{} {
 	data := make(map[string]interface{})
-	for key, value := range imap.data {
+	for key, value := range smap.data {
 		data[key] = value.ToData()
 	}
 	return data
 }
 
-func (imap *stringObjectMap) Reset() {
-	imap.updatedKeys.Clear()
-	imap.removedKeys.Clear()
-	for _, v := range imap.data {
-		v.Reset()
+func (smap *stringObjectMap) Reset() {
+	data := smap.data
+	for _, k := range smap.updatedKeys.ToSlice() {
+		data[k.(string)].Reset()
 	}
+	smap.updatedKeys.Clear()
+	smap.removedKeys.Clear()
 }
 
-func (imap *stringObjectMap) LoadJsoniter(any jsoniter.Any) error {
-	imap.Reset()
-	data := imap.data
+func (smap *stringObjectMap) LoadJsoniter(any jsoniter.Any) error {
+	smap.Reset()
+	data := smap.data
 	for k, v := range data {
 		v.unbind()
 		delete(data, k)
 	}
 	if any.ValueType() == jsoniter.ObjectValue {
-		valueFactory := imap.valueFactory
+		valueFactory := smap.valueFactory
 		keys := any.Keys()
 		for _, key := range keys {
 			value := valueFactory()
@@ -368,16 +432,16 @@ func (imap *stringObjectMap) LoadJsoniter(any jsoniter.Any) error {
 				return err
 			}
 			data[key] = value
-			value.setParent(imap)
+			value.setParent(smap)
 			value.setKey(key)
 		}
 	}
 	return nil
 }
 
-func (imap *stringObjectMap) AppendUpdates(updates bson.M) bson.M {
-	data := imap.data
-	updatedKeys := imap.updatedKeys
+func (smap *stringObjectMap) AppendUpdates(updates bson.M) bson.M {
+	data := smap.data
+	updatedKeys := smap.updatedKeys
 	if updatedKeys.Cardinality() > 0 {
 		dset, ok := updates["$set"].(bson.M)
 		if !ok {
@@ -393,7 +457,7 @@ func (imap *stringObjectMap) AppendUpdates(updates bson.M) bson.M {
 			}
 		}
 	}
-	removedKeys := imap.removedKeys
+	removedKeys := smap.removedKeys
 	if removedKeys.Cardinality() > 0 {
 		unset, ok := updates["$unset"].(bson.M)
 		if !ok {
@@ -401,29 +465,29 @@ func (imap *stringObjectMap) AppendUpdates(updates bson.M) bson.M {
 		}
 		for _, uk := range removedKeys.ToSlice() {
 			key := uk.(string)
-			name := imap.XPath().Resolve(key)
+			name := smap.XPath().Resolve(key)
 			unset[name.Value()] = 1
 		}
 	}
 	return updates
 }
 
-func (imap *stringObjectMap) ToDocument() bson.M {
+func (smap *stringObjectMap) ToDocument() bson.M {
 	doc := bson.M{}
-	for k, v := range imap.data {
+	for k, v := range smap.data {
 		value := v.ToBson()
 		doc[k] = value
 	}
 	return doc
 }
 
-func (imap *stringObjectMap) LoadDocument(document bson.M) error {
-	imap.Reset()
-	data := imap.data
+func (smap *stringObjectMap) LoadDocument(document bson.M) error {
+	smap.Reset()
+	data := smap.data
 	for k := range data {
 		delete(data, k)
 	}
-	valueFactory := imap.valueFactory
+	valueFactory := smap.valueFactory
 	for key, value := range document {
 		obj, ok := value.(bson.M)
 		if !ok {

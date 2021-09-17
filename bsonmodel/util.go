@@ -1,11 +1,15 @@
 package bsonmodel
 
 import (
+	"errors"
+	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // DotNotation defines BSON dot notation.
@@ -98,4 +102,116 @@ func numberToDate(num int) time.Time {
 func dateToNumber(date time.Time) int {
 	year, month, day := date.Date()
 	return year*10000 + int(month)*100 + day
+}
+
+func FixedEmbedded(m bson.M, name string) bson.M {
+	doc, ok := m[name].(bson.M)
+	if !ok {
+		doc = bson.M{}
+		m[name] = doc
+	}
+	return doc
+}
+
+func IntValue(m bson.M, name string, def int) (int, error) {
+	v := m[name]
+	if v == nil {
+		return def, nil
+	}
+	switch v.(type) {
+	case int32:
+		return int(v.(int32)), nil
+	case int64:
+		return int(v.(int64)), nil
+	case float64:
+		return int(v.(float64)), nil
+	case int:
+		return v.(int), nil
+	default:
+		return def, errors.New(fmt.Sprintf("Type %v can not be cast to type int", reflect.TypeOf(v)))
+	}
+}
+
+func Float64Value(m bson.M, name string, def float64) (float64, error) {
+	v := m[name]
+	if v == nil {
+		return def, nil
+	}
+	switch v.(type) {
+	case int32:
+		return float64(v.(int32)), nil
+	case int64:
+		return float64(v.(int64)), nil
+	case float64:
+		return v.(float64), nil
+	case int:
+		return float64(v.(int)), nil
+	default:
+		return def, errors.New(fmt.Sprintf("Type %v can not be cast to type int", reflect.TypeOf(v)))
+	}
+}
+
+func StringValue(m bson.M, name string, def string) (string, error) {
+	v := m[name]
+	if v == nil {
+		return def, nil
+	}
+	switch v.(type) {
+	case string:
+		return v.(string), nil
+	default:
+		return def, errors.New(fmt.Sprintf("Type %v can not be cast to type string", reflect.TypeOf(v)))
+	}
+}
+
+func EmbeddedValue(m bson.M, name string) (bson.M, error) {
+	v := m[name]
+	if v == nil {
+		return nil, nil
+	}
+	switch v.(type) {
+	case bson.M:
+		return v.(bson.M), nil
+	default:
+		return nil, errors.New(fmt.Sprintf("Type %v can not be cast to type bson.M", reflect.TypeOf(v)))
+	}
+}
+
+func AnyIntValue(any jsoniter.Any, name string, def int) (int, error) {
+	switch any.ValueType() {
+	case jsoniter.NilValue:
+		return def, nil
+	case jsoniter.InvalidValue:
+		return def, nil
+	case jsoniter.NumberValue:
+		return any.ToInt(), nil
+	default:
+		return def, errors.New(fmt.Sprintf("The value is not a NUMBER (%s)", valueTypeName(any.ValueType())))
+	}
+}
+
+func AnyFloat64Value(any jsoniter.Any, name string, def float64) (float64, error) {
+	switch any.ValueType() {
+	case jsoniter.NilValue:
+		return def, nil
+	case jsoniter.InvalidValue:
+		return def, nil
+	case jsoniter.NumberValue:
+		return any.ToFloat64(), nil
+	default:
+		return def, errors.New(fmt.Sprintf("The value is not a NUMBER (%s)", valueTypeName(any.ValueType())))
+	}
+}
+
+func AnyStringValue(any jsoniter.Any, name string, def string) (string, error) {
+	switch any.ValueType() {
+	case jsoniter.NilValue:
+		return def, nil
+	case jsoniter.InvalidValue:
+		return def, nil
+	case jsoniter.StringValue:
+		return any.ToString(), nil
+	default:
+		return def, errors.New(fmt.Sprintf("The value is not a STRING (%s)", valueTypeName(any.ValueType())))
+	}
 }
