@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/bits-and-blooms/bitset"
 	"github.com/fmjsjx/bson-model-go/bsonmodel"
+	"github.com/fmjsjx/bson-model-go/example"
 	jsoniter "github.com/json-iterator/go"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -55,14 +55,6 @@ func main() {
 		fmt.Printf("createTime.Unix: %d\n", createTime.Unix())
 		fmt.Printf("createTime.UnixMilli: %d\n", createTime.UnixMilli())
 	}
-	doc := make(map[int]int)
-	for i := 1; i < 10; i++ {
-		doc[i] = i * i
-	}
-	for k, v := range doc {
-		fmt.Printf("k: %d, v: %d\n", k, v)
-	}
-	delete(doc, 1)
 
 	imap := bsonmodel.NewIntSimpleMapModel(nil, "test", bsonmodel.IntValueType())
 	imap.Put(1, 101)
@@ -88,34 +80,51 @@ func main() {
 	} else {
 		fmt.Printf("failed: %e\n", err)
 	}
-
-	b := &bitset.BitSet{}
-	fmt.Printf("b.Len() => %v\n", b.Len())
-	fmt.Printf("b => %v\n", b)
-	fmt.Printf("b.0 => %v\n", b.Test(0))
-	b.Set(0)
-	fmt.Printf("b.Len() => %v\n", b.Len())
-	fmt.Printf("b => %v\n", b)
-	fmt.Printf("b.0 => %v\n", b.Test(0))
-	b.DeleteAt(0)
-	fmt.Printf("b.Len() => %v\n", b.Len())
-	fmt.Printf("b => %v\n", b)
-	fmt.Printf("b.0 => %v\n", b.Test(0))
-	b.Set(2)
-	b.Set(3)
-	fmt.Printf("b.Len() => %v\n", b.Len())
-	fmt.Printf("b => %v\n", b)
-	b.ClearAll()
-	fmt.Printf("b.None() => %v\n", b.None())
-	fmt.Printf("b.Len() => %v\n", b.Len())
-	fmt.Printf("b => %v\n", b)
-	fmt.Printf("b.Len() => %v\n", b.Len())
-	b.DeleteAt(0)
-	fmt.Printf("b.Len() => %v\n", b.Len())
-	iii := bson.M{"cu": int32(1), "xxx": "yyy"}
-	coinTotal := iii["ct"]
-	if coinTotal == nil {
-		fmt.Println(0)
+	now := time.Now()
+	doc := bson.M{"_id": int32(123), "wt": bson.M{"ct": int32(5000), "cu": int32(2000), "d": int32(10)}, "eqm": bson.M{"12345678-1234-5678-9abc-123456789abc": bson.M{"id": "12345678-1234-5678-9abc-123456789abc", "rid": int32(1), "atk": int32(12), "def": int32(2), "hp": int32(100)}}, "itm": bson.M{"2001": int32(10), "2002": int32(1)}, "_uv": int32(1), "_ct": primitive.NewDateTimeFromTime(now), "_ut": primitive.NewDateTimeFromTime(now)}
+	player, err := example.LoadPlayerFromDocument(doc)
+	if err != nil {
+		fmt.Printf("Load player failed: %e\n", err)
 	}
+	fmt.Printf("Player => %v\n", player)
+	json, err = player.MarshalToJsonString()
+	if err == nil {
+		fmt.Printf("player: %s\n", json)
+	} else {
+		fmt.Printf("failed: %e\n", err)
+	}
+	fmt.Printf("update => %v\n", player.ToUpdate())
+	player.Wallet().SetCoinUsed(2200)
+	player.Wallet().SetDiamond(11)
+	equipment := player.Equipment("12345678-1234-5678-9abc-123456789abc")
+	equipment.SetAtk(13)
+	player.Items().Put(3001, 1)
+	player.Items().Remove(2002)
+	player.IncreaseUpdateVersion()
+	player.SetUpdateTime(time.Now())
+	fmt.Printf("update => %v\n", player.ToUpdate())
+	equipment.SetFullyUpdate(true)
+	fmt.Printf("update => %v\n", player.ToUpdate())
+	player.Reset()
+	fmt.Printf("update => %v\n", player.ToUpdate())
 
+	fmt.Printf("data => %v\n", player.ToData())
+	json, err = jsoniter.MarshalToString(player.ToData())
+	if err == nil {
+		fmt.Printf("player data: %s\n", json)
+	} else {
+		fmt.Printf("failed: %e\n", err)
+	}
+	any := jsoniter.Get([]byte(json))
+	fmt.Printf("any => %v\n", any)
+	player, err = example.LoadPlayerFromJsoniter(any)
+	if err != nil {
+		fmt.Printf("Load player failed: %e\n", err)
+	}
+	json, err = player.MarshalToJsonString()
+	if err == nil {
+		fmt.Printf("player: %s\n", json)
+	} else {
+		fmt.Printf("failed: %e\n", err)
+	}
 }
