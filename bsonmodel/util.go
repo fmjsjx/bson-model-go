@@ -214,6 +214,60 @@ func EmbeddedValue(m bson.M, name string) (bson.M, error) {
 	}
 }
 
+func IntArrayValue(m bson.M, name string) ([]int, error) {
+	v := m[name]
+	if v == nil {
+		return nil, nil
+	}
+	switch v.(type) {
+	case bson.A:
+		a := v.(bson.A)
+		arr := make([]int, 0, len(a))
+		for _, i := range a {
+			switch i.(type) {
+			case int32:
+				arr = append(arr, int(i.(int32)))
+			case int64:
+				arr = append(arr, int(i.(int64)))
+			case float64:
+				arr = append(arr, int(i.(float64)))
+			case int:
+				arr = append(arr, i.(int))
+			default:
+				err := errors.New(fmt.Sprintf("Type %v can not be cast to type int in bson.A: %v", reflect.TypeOf(i), a))
+				return nil, err
+			}
+		}
+		return arr, nil
+	default:
+		return nil, errors.New(fmt.Sprintf("Type %v can not be cast to type bson.A", reflect.TypeOf(v)))
+	}
+}
+
+func StringArrayValue(m bson.M, name string) ([]string, error) {
+	v := m[name]
+	if v == nil {
+		return nil, nil
+	}
+	switch v.(type) {
+	case bson.A:
+		a := v.(bson.A)
+		arr := make([]string, 0, len(a))
+		for _, s := range a {
+			switch s.(type) {
+			case string:
+				arr = append(arr, s.(string))
+			default:
+				err := errors.New(fmt.Sprintf("Type %v can not be cast to type string in bson.A: %v", reflect.TypeOf(s), a))
+				return nil, err
+			}
+		}
+		return arr, nil
+	default:
+		return nil, errors.New(fmt.Sprintf("Type %v can not be cast to type bson.A", reflect.TypeOf(v)))
+	}
+}
+
 func AnyIntValue(any jsoniter.Any, def int) (int, error) {
 	switch any.ValueType() {
 	case jsoniter.NilValue:

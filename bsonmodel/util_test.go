@@ -246,3 +246,112 @@ func TestDateTimeValue(t *testing.T) {
 		t.Errorf("The value expected %v but was %v", zero, c)
 	}
 }
+
+func TestDateValue(t *testing.T) {
+	m := bson.M{"a": int32(20210918), "b": "str"}
+	a, err := DateValue(m, "a")
+	if err != nil {
+		t.Errorf("Unexpected error occurs: %e", err)
+	}
+	year, month, day := a.Date()
+	if year != 2021 {
+		t.Errorf("The value expected %v but was %v", 2021, year)
+	}
+	if month != time.September {
+		t.Errorf("The value expected %v but was %v", time.September, month)
+	}
+	if day != 18 {
+		t.Errorf("The value expected %v but was %v", 18, day)
+	}
+	_, err = DateValue(m, "b")
+	if err == nil {
+		t.Error("Expected error but not")
+	}
+	c, err := DateValue(m, "c")
+	if err != nil {
+		t.Errorf("Unexpected error occurs: %e", err)
+	}
+	if !c.IsZero() {
+		var zero time.Time
+		t.Errorf("The value expected %v but was %v", zero, c)
+	}
+}
+
+func TestEmbeddedValue(t *testing.T) {
+	m := bson.M{"a": bson.M{}, "b": "str"}
+	a, err := EmbeddedValue(m, "a")
+	if err != nil {
+		t.Errorf("Unexpected error occurs: %e", err)
+	}
+	if len(a) > 0 {
+		t.Errorf("The len(value) expected %v but was %v", 0, len(a))
+	}
+	_, err = EmbeddedValue(m, "b")
+	if err == nil {
+		t.Error("Expected error but not")
+	}
+	c, err := EmbeddedValue(m, "c")
+	if err != nil {
+		t.Errorf("Unexpected error occurs: %e", err)
+	}
+	if c != nil {
+		t.Errorf("The value expected %v but was %v", nil, c)
+	}
+}
+
+func TestIntArrayValue(t *testing.T) {
+	m := bson.M{"a": bson.A{int32(1), int32(2), int32(3)}, "b": bson.A{"a", "b", "c"}, "c": "str"}
+	a, err := IntArrayValue(m, "a")
+	if err != nil {
+		t.Errorf("Unexpected error occurs: %e", err)
+	}
+	for i, v := range a {
+		if v != i+1 {
+			t.Errorf("The value expected %v but was %v", i+1, v)
+		}
+	}
+	_, err = IntArrayValue(m, "b")
+	if err == nil {
+		t.Error("Expected error but not")
+	}
+	_, err = IntArrayValue(m, "c")
+	if err == nil {
+		t.Error("Expected error but not")
+	}
+	d, err := IntArrayValue(m, "d")
+	if err != nil {
+		t.Errorf("Unexpected error occurs: %e", err)
+	}
+	if d != nil {
+		t.Errorf("The value expected %v but was %v", nil, d)
+	}
+}
+
+func TestStringArrayValue(t *testing.T) {
+	m := bson.M{"a": bson.A{int32(1), int32(2), int32(3)}, "b": bson.A{"a", "b", "c"}, "c": "str"}
+	_, err := StringArrayValue(m, "a")
+	if err == nil {
+		t.Error("Expected error but not")
+	}
+	b, err := StringArrayValue(m, "b")
+	if err != nil {
+		t.Errorf("Unexpected error occurs: %e", err)
+	}
+	expected := []string{"a", "b", "c"}
+	for i, v := range b {
+		if v != expected[i] {
+			t.Errorf("The value expected %v but was %v", expected[i], v)
+		}
+	}
+	_, err = StringArrayValue(m, "c")
+	if err == nil {
+		t.Error("Expected error but not")
+	}
+	d, err := StringArrayValue(m, "d")
+	if err != nil {
+		t.Errorf("Unexpected error occurs: %e", err)
+	}
+	if d != nil {
+		t.Errorf("The value expected %v but was %v", nil, d)
+	}
+}
