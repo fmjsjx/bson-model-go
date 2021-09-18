@@ -10,6 +10,7 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // DotNotation defines BSON dot notation.
@@ -164,6 +165,42 @@ func StringValue(m bson.M, name string, def string) (string, error) {
 	}
 }
 
+func DateTimeValue(m bson.M, name string) (t time.Time, err error) {
+	v := m[name]
+	if v == nil {
+		return
+	}
+	switch v.(type) {
+	case primitive.DateTime:
+		t = v.(primitive.DateTime).Time()
+	case primitive.Timestamp:
+		t = time.Unix(int64(v.(primitive.Timestamp).T), 0)
+	default:
+		err = errors.New(fmt.Sprintf("Type %v can not be cast to type time.Time", reflect.TypeOf(v)))
+	}
+	return
+}
+
+func DateValue(m bson.M, name string) (t time.Time, err error) {
+	v := m[name]
+	if v == nil {
+		return
+	}
+	switch v.(type) {
+	case int32:
+		t = numberToDate(int(v.(int32)))
+	case int64:
+		t = numberToDate(int(v.(int64)))
+	case float64:
+		t = numberToDate(int(v.(float64)))
+	case int:
+		t = numberToDate(v.(int))
+	default:
+		err = errors.New(fmt.Sprintf("Type %v can not be cast to type int", reflect.TypeOf(v)))
+	}
+	return
+}
+
 func EmbeddedValue(m bson.M, name string) (bson.M, error) {
 	v := m[name]
 	if v == nil {
@@ -177,7 +214,7 @@ func EmbeddedValue(m bson.M, name string) (bson.M, error) {
 	}
 }
 
-func AnyIntValue(any jsoniter.Any, name string, def int) (int, error) {
+func AnyIntValue(any jsoniter.Any, def int) (int, error) {
 	switch any.ValueType() {
 	case jsoniter.NilValue:
 		return def, nil
@@ -190,7 +227,7 @@ func AnyIntValue(any jsoniter.Any, name string, def int) (int, error) {
 	}
 }
 
-func AnyFloat64Value(any jsoniter.Any, name string, def float64) (float64, error) {
+func AnyFloat64Value(any jsoniter.Any, def float64) (float64, error) {
 	switch any.ValueType() {
 	case jsoniter.NilValue:
 		return def, nil
@@ -203,7 +240,7 @@ func AnyFloat64Value(any jsoniter.Any, name string, def float64) (float64, error
 	}
 }
 
-func AnyStringValue(any jsoniter.Any, name string, def string) (string, error) {
+func AnyStringValue(any jsoniter.Any, def string) (string, error) {
 	switch any.ValueType() {
 	case jsoniter.NilValue:
 		return def, nil
@@ -214,4 +251,32 @@ func AnyStringValue(any jsoniter.Any, name string, def string) (string, error) {
 	default:
 		return def, errors.New(fmt.Sprintf("The value is not a STRING (%s)", valueTypeName(any.ValueType())))
 	}
+}
+
+func AnyDateTimeValue(any jsoniter.Any) (t time.Time, err error) {
+	switch any.ValueType() {
+	case jsoniter.NilValue:
+		return
+	case jsoniter.InvalidValue:
+		return
+	case jsoniter.NumberValue:
+		t = time.UnixMilli(any.ToInt64())
+	default:
+		err = errors.New(fmt.Sprintf("The value is not a NUMBER (%s)", valueTypeName(any.ValueType())))
+	}
+	return
+}
+
+func AnyDateValue(any jsoniter.Any) (t time.Time, err error) {
+	switch any.ValueType() {
+	case jsoniter.NilValue:
+		return
+	case jsoniter.InvalidValue:
+		return
+	case jsoniter.NumberValue:
+		t = numberToDate(any.ToInt())
+	default:
+		err = errors.New(fmt.Sprintf("The value is not a NUMBER (%s)", valueTypeName(any.ValueType())))
+	}
+	return
 }

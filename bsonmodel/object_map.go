@@ -253,6 +253,8 @@ func (imap *intObjectMap) LoadDocument(document bson.M) error {
 			return err
 		}
 		data[k] = v
+		v.setParent(imap)
+		v.setKey(k)
 	}
 	return nil
 }
@@ -500,6 +502,8 @@ func (smap *stringObjectMap) LoadDocument(document bson.M) error {
 			return err
 		}
 		data[key] = v
+		v.setParent(smap)
+		v.setKey(key)
 	}
 	return nil
 }

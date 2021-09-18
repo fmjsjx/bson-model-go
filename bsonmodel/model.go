@@ -35,6 +35,7 @@ type ObjectModel interface {
 type RootModel interface {
 	ObjectModel
 	ToUpdate() bson.M
+	MarshalToJsonString() (string, error)
 }
 
 type MapValueModel interface {
