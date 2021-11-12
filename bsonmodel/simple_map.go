@@ -188,13 +188,13 @@ func (valueType *dateValueType) Parse(value interface{}) (interface{}, error) {
 	}
 	switch value.(type) {
 	case int32:
-		return numberToDate(int(value.(int32))), nil
+		return NumberToDate(int(value.(int32))), nil
 	case int64:
-		return numberToDate(int(value.(int64))), nil
+		return NumberToDate(int(value.(int64))), nil
 	case int:
-		return numberToDate(value.(int)), nil
+		return NumberToDate(value.(int)), nil
 	case float64:
-		return numberToDate(int(value.(float64))), nil
+		return NumberToDate(int(value.(float64))), nil
 	default:
 		e := errors.New(fmt.Sprintf("Type %v can not be cast to Date", reflect.TypeOf(value)))
 		return nil, e
@@ -206,18 +206,18 @@ func (valueType *dateValueType) ParseJsoniter(value jsoniter.Any) (interface{}, 
 		return nil, nil
 	}
 	if value.ValueType() == jsoniter.NumberValue {
-		return numberToDate(value.ToInt()), nil
+		return NumberToDate(value.ToInt()), nil
 	}
 	e := errors.New(fmt.Sprintf("The value is not a NUMBER (%s)", valueTypeName(value.ValueType())))
 	return nil, e
 }
 
 func (valueType *dateValueType) ToBson(value interface{}) interface{} {
-	return dateToNumber(value.(time.Time))
+	return DateToNumber(value.(time.Time))
 }
 
 func (valueType *dateValueType) ToData(value interface{}) interface{} {
-	return dateToNumber(value.(time.Time))
+	return DateToNumber(value.(time.Time))
 }
 
 var intSimpleValueType *intValeType = &intValeType{}

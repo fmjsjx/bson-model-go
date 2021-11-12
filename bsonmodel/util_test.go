@@ -110,7 +110,7 @@ func TestValueTypeName(t *testing.T) {
 }
 
 func TestNumberToDate(t *testing.T) {
-	date := numberToDate(20210916)
+	date := NumberToDate(20210916)
 	year, month, day := date.Date()
 	if year != 2021 {
 		t.Errorf("The value expected 2021 but was %d", year)
@@ -127,7 +127,7 @@ func TestDateToNumber(t *testing.T) {
 	date := time.Now()
 	duration := time.Duration(date.Hour())*time.Hour + time.Duration(date.Minute())*time.Minute + time.Duration(date.Second())*time.Second + time.Duration(date.Nanosecond())
 	date = date.Add(-duration)
-	actual := dateToNumber(date)
+	actual := DateToNumber(date)
 	year, month, day := date.Date()
 	expected := year*10000 + int(month)*100 + day
 	if actual != expected {

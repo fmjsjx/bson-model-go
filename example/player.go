@@ -81,8 +81,6 @@ func (p *defaultPlayer) LoadJsoniter(any jsoniter.Any) error {
 		if err != nil {
 			return err
 		}
-	} else {
-		p.wallet.Reset()
 	}
 	equipments := any.Get("eqm")
 	if equipments.ValueType() == jsoniter.ObjectValue {
@@ -95,9 +93,12 @@ func (p *defaultPlayer) LoadJsoniter(any jsoniter.Any) error {
 	}
 	items := any.Get("itm")
 	if items.ValueType() == jsoniter.ObjectValue {
+		err = p.items.LoadJsoniter(items)
 		if err != nil {
 			return err
 		}
+	} else {
+		p.items.Clear()
 	}
 	updateVersion, err := bsonmodel.AnyIntValue(any.Get("_uv"), 0)
 	if err != nil {
@@ -195,8 +196,6 @@ func (p *defaultPlayer) LoadDocument(document bson.M) error {
 		if err != nil {
 			return err
 		}
-	} else {
-		p.wallet.Reset()
 	}
 	equipments, err := bsonmodel.EmbeddedValue(document, "eqm")
 	if err != nil {
@@ -256,15 +255,11 @@ func (p *defaultPlayer) DeletedSize() int {
 }
 
 func (p *defaultPlayer) FullyUpdate() bool {
-	return p.updatedFields.Test(0)
+	return false
 }
 
 func (p *defaultPlayer) SetFullyUpdate(fullyUpdate bool) {
-	if fullyUpdate {
-		p.updatedFields.Set(0)
-	} else {
-		p.updatedFields.DeleteAt(0)
-	}
+	// no effect
 }
 
 func (p *defaultPlayer) ToUpdate() bson.M {

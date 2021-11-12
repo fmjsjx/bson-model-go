@@ -93,14 +93,14 @@ func valueTypeName(valueType jsoniter.ValueType) string {
 	}
 }
 
-func numberToDate(num int) time.Time {
+func NumberToDate(num int) time.Time {
 	year := num / 10000
 	month := num / 100 % 100
 	day := num % 100
 	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.Local)
 }
 
-func dateToNumber(date time.Time) int {
+func DateToNumber(date time.Time) int {
 	year, month, day := date.Date()
 	return year*10000 + int(month)*100 + day
 }
@@ -188,13 +188,13 @@ func DateValue(m bson.M, name string) (t time.Time, err error) {
 	}
 	switch v.(type) {
 	case int32:
-		t = numberToDate(int(v.(int32)))
+		t = NumberToDate(int(v.(int32)))
 	case int64:
-		t = numberToDate(int(v.(int64)))
+		t = NumberToDate(int(v.(int64)))
 	case float64:
-		t = numberToDate(int(v.(float64)))
+		t = NumberToDate(int(v.(float64)))
 	case int:
-		t = numberToDate(v.(int))
+		t = NumberToDate(v.(int))
 	default:
 		err = errors.New(fmt.Sprintf("Type %v can not be cast to type int", reflect.TypeOf(v)))
 	}
@@ -328,7 +328,7 @@ func AnyDateValue(any jsoniter.Any) (t time.Time, err error) {
 	case jsoniter.InvalidValue:
 		return
 	case jsoniter.NumberValue:
-		t = numberToDate(any.ToInt())
+		t = NumberToDate(any.ToInt())
 	default:
 		err = errors.New(fmt.Sprintf("The value is not a NUMBER (%s)", valueTypeName(any.ValueType())))
 	}
