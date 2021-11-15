@@ -176,6 +176,18 @@ func (self *defaultWallet) ToDelete() interface{} {
 	return delete
 }
 
+func (self *defaultWallet) ToDataJson() (string, error) {
+	return jsoniter.MarshalToString(self.ToData())
+}
+
+func (self *defaultWallet) ToSyncJson() (string, error) {
+	return jsoniter.MarshalToString(self.ToSync())
+}
+
+func (self *defaultWallet) ToDeleteJson() (string, error) {
+	return jsoniter.MarshalToString(self.ToDelete())
+}
+
 func (self *defaultWallet) CoinTotal() int {
 	return self.coinTotal
 }

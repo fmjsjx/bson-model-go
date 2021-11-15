@@ -456,6 +456,18 @@ func (imap *intSimpleMap) ToDelete() interface{} {
 	return delete
 }
 
+func (imap *intSimpleMap) ToDataJson() (string, error) {
+	return jsoniter.MarshalToString(imap.ToData())
+}
+
+func (imap *intSimpleMap) ToSyncJson() (string, error) {
+	return jsoniter.MarshalToString(imap.ToSync())
+}
+
+func (imap *intSimpleMap) ToDeleteJson() (string, error) {
+	return jsoniter.MarshalToString(imap.ToDelete())
+}
+
 func NewIntSimpleMapModel(parent BsonModel, name string, valueType SimpleValueType) IntSimpleMapModel {
 	mapModel := &intSimpleMap{}
 	mapModel.parent = parent
@@ -657,6 +669,18 @@ func (smap *stringSimpleMap) ToDelete() interface{} {
 		}
 	}
 	return delete
+}
+
+func (smap *stringSimpleMap) ToDataJson() (string, error) {
+	return jsoniter.MarshalToString(smap.ToData())
+}
+
+func (smap *stringSimpleMap) ToSyncJson() (string, error) {
+	return jsoniter.MarshalToString(smap.ToSync())
+}
+
+func (smap *stringSimpleMap) ToDeleteJson() (string, error) {
+	return jsoniter.MarshalToString(smap.ToDelete())
 }
 
 func NewStringSimpleMapModel(parent BsonModel, name string, valueType SimpleValueType) StringSimpleMapModel {

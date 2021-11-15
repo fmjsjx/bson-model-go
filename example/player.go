@@ -329,6 +329,18 @@ func (self *defaultPlayer) ToDelete() interface{} {
 	return delete
 }
 
+func (self *defaultPlayer) ToDataJson() (string, error) {
+	return jsoniter.MarshalToString(self.ToData())
+}
+
+func (self *defaultPlayer) ToSyncJson() (string, error) {
+	return jsoniter.MarshalToString(self.ToSync())
+}
+
+func (self *defaultPlayer) ToDeleteJson() (string, error) {
+	return jsoniter.MarshalToString(self.ToDelete())
+}
+
 func (self *defaultPlayer) ToUpdate() bson.M {
 	if self.AnyUpdated() {
 		return self.AppendUpdates(bson.M{})

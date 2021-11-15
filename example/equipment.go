@@ -209,6 +209,18 @@ func (self *defaultEquipment) ToDelete() interface{} {
 	return delete
 }
 
+func (self *defaultEquipment) ToDataJson() (string, error) {
+	return jsoniter.MarshalToString(self.ToData())
+}
+
+func (self *defaultEquipment) ToSyncJson() (string, error) {
+	return jsoniter.MarshalToString(self.ToSync())
+}
+
+func (self *defaultEquipment) ToDeleteJson() (string, error) {
+	return jsoniter.MarshalToString(self.ToDelete())
+}
+
 func (self *defaultEquipment) Id() string {
 	return self.id
 }

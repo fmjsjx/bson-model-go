@@ -806,6 +806,18 @@ def fill_to_delete(code, cfg)
   code << "}\n\n"
 end
 
+def fill_to_x_json(code, cfg)
+  code << "func (self *default#{cfg['name']}) ToDataJson() (string, error) {\n"
+  code << tabs(1, "return jsoniter.MarshalToString(self.ToData())")
+  code << "}\n\n"
+  code << "func (self *default#{cfg['name']}) ToSyncJson() (string, error) {\n"
+  code << tabs(1, "return jsoniter.MarshalToString(self.ToSync())")
+  code << "}\n\n"
+  code << "func (self *default#{cfg['name']}) ToDeleteJson() (string, error) {\n"
+  code << tabs(1, "return jsoniter.MarshalToString(self.ToDelete())")
+  code << "}\n\n"
+end
+
 def fill_xetters(code, cfg)
   cfg['fields'].each_with_index do |field, index|
     name = field['name']
@@ -1138,6 +1150,7 @@ def generate_root(cfg)
   fill_fully_update(code, cfg, true)
   fill_to_sync(code, cfg, true)
   fill_to_delete(code, cfg)
+  fill_to_x_json(code, cfg)
   code << "func (self *default#{cfg['name']}) ToUpdate() bson.M {\n"
   code << tabs(1, "if self.AnyUpdated() {")
   code << tabs(2, "return self.AppendUpdates(bson.M{})")
@@ -1206,6 +1219,7 @@ def generate_object(cfg)
   fill_fully_update(code, cfg)
   fill_to_sync(code, cfg)
   fill_to_delete(code, cfg)
+  fill_to_x_json(code, cfg)
   fill_xetters(code, cfg)
   fill_new(code, cfg, true)
   fill_encoder(code, cfg)
@@ -1232,6 +1246,7 @@ def generate_map_value(cfg)
   fill_fully_update(code, cfg)
   fill_to_sync(code, cfg)
   fill_to_delete(code, cfg)
+  fill_to_x_json(code, cfg)
   fill_xetters(code, cfg)
   fill_new(code, cfg)
   small_camel = to_small_camel(cfg['name'])

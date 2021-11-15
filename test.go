@@ -112,11 +112,29 @@ func main() {
 	fmt.Printf("update => %v\n", player.ToUpdate())
 	equipment.SetFullyUpdate(true)
 	fmt.Printf("update => %v\n", player.ToUpdate())
+	json, err = player.ToSyncJson()
+	if err == nil {
+		fmt.Printf("player sync data: %s\n", json)
+	} else {
+		fmt.Printf("failed: %e\n", err)
+	}
+	json, err = player.ToDeleteJson()
+	if err == nil {
+		fmt.Printf("player delete data: %s\n", json)
+	} else {
+		fmt.Printf("failed: %e\n", err)
+	}
 	player.Reset()
 	fmt.Printf("update => %v\n", player.ToUpdate())
 
-	fmt.Printf("data => %v\n", player.ToData())
-	json, err = jsoniter.MarshalToString(player.ToData())
+	json, err = player.MarshalToJsonString()
+	if err == nil {
+		fmt.Printf("player: %s\n", json)
+	} else {
+		fmt.Printf("failed: %e\n", err)
+	}
+
+	json, err = player.ToDataJson()
 	if err == nil {
 		fmt.Printf("player data: %s\n", json)
 	} else {

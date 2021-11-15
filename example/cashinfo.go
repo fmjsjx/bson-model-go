@@ -194,6 +194,18 @@ func (self *defaultCashInfo) ToDelete() interface{} {
 	return delete
 }
 
+func (self *defaultCashInfo) ToDataJson() (string, error) {
+	return jsoniter.MarshalToString(self.ToData())
+}
+
+func (self *defaultCashInfo) ToSyncJson() (string, error) {
+	return jsoniter.MarshalToString(self.ToSync())
+}
+
+func (self *defaultCashInfo) ToDeleteJson() (string, error) {
+	return jsoniter.MarshalToString(self.ToDelete())
+}
+
 func (self *defaultCashInfo) Stages() bsonmodel.IntSimpleMapModel {
 	return self.stages
 }

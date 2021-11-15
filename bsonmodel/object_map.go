@@ -289,6 +289,18 @@ func (imap *intObjectMap) ToDelete() interface{} {
 	return delete
 }
 
+func (imap *intObjectMap) ToDataJson() (string, error) {
+	return jsoniter.MarshalToString(imap.ToData())
+}
+
+func (imap *intObjectMap) ToSyncJson() (string, error) {
+	return jsoniter.MarshalToString(imap.ToSync())
+}
+
+func (imap *intObjectMap) ToDeleteJson() (string, error) {
+	return jsoniter.MarshalToString(imap.ToDelete())
+}
+
 func NewIntObjectMapModel(parent BsonModel, name string, valueFactory IntObjectMapValueFactory) IntObjectMapModel {
 	mapModel := &intObjectMap{}
 	mapModel.parent = parent
@@ -566,6 +578,18 @@ func (smap *stringObjectMap) ToDelete() interface{} {
 		}
 	}
 	return delete
+}
+
+func (smap *stringObjectMap) ToDataJson() (string, error) {
+	return jsoniter.MarshalToString(smap.ToData())
+}
+
+func (smap *stringObjectMap) ToSyncJson() (string, error) {
+	return jsoniter.MarshalToString(smap.ToSync())
+}
+
+func (smap *stringObjectMap) ToDeleteJson() (string, error) {
+	return jsoniter.MarshalToString(smap.ToDelete())
 }
 
 func NewStringObjectMapModel(parent BsonModel, name string, valueFactory StringObjectMapValueFactory) StringObjectMapModel {

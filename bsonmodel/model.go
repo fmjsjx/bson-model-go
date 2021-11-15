@@ -19,6 +19,9 @@ type BsonModel interface {
 	AppendUpdates(updates bson.M) bson.M
 	ToSync() interface{}
 	ToDelete() interface{}
+	ToDataJson() (string, error)
+	ToSyncJson() (string, error)
+	ToDeleteJson() (string, error)
 }
 
 type DocumentModel interface {
