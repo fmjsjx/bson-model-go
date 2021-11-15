@@ -184,6 +184,7 @@ func (self *defaultWallet) SetCoinTotal(coinTotal int) {
 	if self.coinTotal != coinTotal {
 		self.coinTotal = coinTotal
 		self.updatedFields.Set(1)
+		self.updatedFields.Set(3)
 	}
 }
 
@@ -195,6 +196,7 @@ func (self *defaultWallet) SetCoinUsed(coinUsed int) {
 	if self.coinUsed != coinUsed {
 		self.coinUsed = coinUsed
 		self.updatedFields.Set(2)
+		self.updatedFields.Set(3)
 	}
 }
 

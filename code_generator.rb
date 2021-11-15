@@ -716,8 +716,7 @@ def fill_to_delete(code, cfg)
 end
 
 def fill_xetters(code, cfg)
-  fields = cfg['fields']
-  fields.each_with_index do |field, index|
+  cfg['fields'].each_with_index do |field, index|
     name = field['name']
     camel = to_camel(name)
     case field['type']
@@ -737,6 +736,11 @@ def fill_xetters(code, cfg)
         code << tabs(1, "if self.#{name} != #{name} {")
         code << tabs(2, "self.#{name} = #{name}")
         code << tabs(2, "self.updatedFields.Set(#{index + 1})")
+        if field.has_key? 'relations'
+          field['relations'].each do |relation_index|
+            code << tabs(2, "self.updatedFields.Set(#{relation_index})")
+          end
+        end
         code << tabs(1, "}")
         code << "}\n\n"
         if field['increase'] == true
@@ -744,6 +748,11 @@ def fill_xetters(code, cfg)
           code << tabs(1, "#{name} := self.#{name} + 1")
           code << tabs(1, "self.#{name} = #{name}")
           code << tabs(1, "self.updatedFields.Set(#{index + 1})")
+          if field.has_key? 'relations'
+            field['relations'].each do |relation_index|
+              code << tabs(2, "self.updatedFields.Set(#{relation_index})")
+            end
+          end
           code << tabs(1, "return #{name}")
           code << "}\n\n"
         end
@@ -753,6 +762,11 @@ def fill_xetters(code, cfg)
           code << tabs(1, "new_#{name} := self.#{name} + #{name}")
           code << tabs(1, "self.#{name} = new_#{name}")
           code << tabs(1, "self.updatedFields.Set(#{index + 1})")
+          if field.has_key? 'relations'
+            field['relations'].each do |relation_index|
+              code << tabs(2, "self.updatedFields.Set(#{relation_index})")
+            end
+          end
           code << tabs(1, "return new_#{name}")
           code << "}\n\n"
         end
@@ -773,6 +787,11 @@ def fill_xetters(code, cfg)
         code << tabs(1, "if self.#{name} != #{name} {")
         code << tabs(2, "self.#{name} = #{name}")
         code << tabs(2, "self.updatedFields.Set(#{index + 1})")
+        if field.has_key? 'relations'
+          field['relations'].each do |relation_index|
+            code << tabs(2, "self.updatedFields.Set(#{relation_index})")
+          end
+        end
         code << tabs(1, "}")
         code << "}\n\n"
       end
@@ -792,6 +811,11 @@ def fill_xetters(code, cfg)
         code << tabs(1, "if self.#{name} != #{name} {")
         code << tabs(2, "self.#{name} = #{name}")
         code << tabs(2, "self.updatedFields.Set(#{index + 1})")
+        if field.has_key? 'relations'
+          field['relations'].each do |relation_index|
+            code << tabs(2, "self.updatedFields.Set(#{relation_index})")
+          end
+        end
         code << tabs(1, "}")
         code << "}\n\n"
       end
@@ -811,6 +835,11 @@ def fill_xetters(code, cfg)
         code << tabs(1, "if self.#{name} != #{name} {")
         code << tabs(2, "self.#{name} = #{name}")
         code << tabs(2, "self.updatedFields.Set(#{index + 1})")
+        if field.has_key? 'relations'
+          field['relations'].each do |relation_index|
+            code << tabs(2, "self.updatedFields.Set(#{relation_index})")
+          end
+        end
         code << tabs(1, "}")
         code << "}\n\n"
       end
@@ -830,11 +859,21 @@ def fill_xetters(code, cfg)
         code << tabs(1, "if self.#{name} != #{name} {")
         code << tabs(2, "self.#{name} = #{name}")
         code << tabs(2, "self.updatedFields.Set(#{index + 1})")
+        if field.has_key? 'relations'
+          field['relations'].each do |relation_index|
+            code << tabs(2, "self.updatedFields.Set(#{relation_index})")
+          end
+        end
         code << tabs(1, "}")
         code << "}\n\n"
         code << "func (self *default#{cfg['name']}) Set#{camel}Number(#{name} int) {\n"
         code << tabs(1, "self.#{name} = bsonmodel.NumberToDate(#{name})")
         code << tabs(1, "self.updatedFields.Set(#{index + 1})")
+        if field.has_key? 'relations'
+          field['relations'].each do |relation_index|
+            code << tabs(2, "self.updatedFields.Set(#{relation_index})")
+          end
+        end
         code << "}\n\n"
       end
     when 'object'
