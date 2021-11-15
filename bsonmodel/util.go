@@ -334,3 +334,47 @@ func AnyDateValue(any jsoniter.Any) (t time.Time, err error) {
 	}
 	return
 }
+
+func AnyIntArrayValue(any jsoniter.Any) ([]int, error) {
+	switch any.ValueType() {
+	case jsoniter.NilValue:
+		return nil, nil
+	case jsoniter.InvalidValue:
+		return nil, nil
+	case jsoniter.ArrayValue:
+		len := any.Size()
+		array := make([]int, 0, len)
+		for i := 0; i < len; i++ {
+			val, err := AnyIntValue(any.Get(i), 0)
+			if err != nil {
+				return nil, err
+			}
+			array = append(array, val)
+		}
+		return array, nil
+	default:
+		return nil, errors.New(fmt.Sprintf("The value is not an ARRAY (%s)", valueTypeName(any.ValueType())))
+	}
+}
+
+func AnyStringArrayValue(any jsoniter.Any) ([]string, error) {
+	switch any.ValueType() {
+	case jsoniter.NilValue:
+		return nil, nil
+	case jsoniter.InvalidValue:
+		return nil, nil
+	case jsoniter.ArrayValue:
+		len := any.Size()
+		array := make([]string, len, len)
+		for i := 0; i < len; i++ {
+			val, err := AnyStringValue(any.Get(i), "")
+			if err != nil {
+				return nil, err
+			}
+			array[i] = val
+		}
+		return array, nil
+	default:
+		return nil, errors.New(fmt.Sprintf("The value is not an ARRAY (%s)", valueTypeName(any.ValueType())))
+	}
+}

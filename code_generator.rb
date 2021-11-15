@@ -34,7 +34,7 @@ def map_type(key_type)
   when 'string'
     'bsonmodel.StringObjectMapModel'
   else
-    raise "supported key type `#{key_type}` for map"
+    raise "unsupported key type `#{key_type}` for map"
   end
 end
 
@@ -45,7 +45,7 @@ def simple_map_type(key_type)
   when 'string'
     'bsonmodel.StringSimpleMapModel'
   else
-    raise "supported key type `#{key_type}` for simple map"
+    raise "unsupported key type `#{key_type}` for simple map"
   end
 end
 
@@ -56,7 +56,7 @@ def map_factory(key_type)
   when 'string'
     'bsonmodel.NewStringObjectMapModel'
   else
-    raise "supported key type `#{key_type}` for map"
+    raise "unsupported key type `#{key_type}` for map"
   end
 end
 
@@ -67,7 +67,7 @@ def map_value_factory(key_type)
   when 'string'
     'bsonmodel.StringObjectMapValueFactory'
   else
-    raise "supported key type `#{key_type}` for map"
+    raise "unsupported key type `#{key_type}` for map"
   end
 end
 
@@ -78,7 +78,7 @@ def simple_map_factory(key_type)
   when 'string'
     'bsonmodel.NewStringSimpleMapModel'
   else
-    raise "supported key type `#{key_type}` for simple map"
+    raise "unsupported key type `#{key_type}` for simple map"
   end
 end
 
@@ -108,7 +108,7 @@ def map_value_type(key_type)
   when 'string'
     'bsonmodel.StringObjectMapValueModel'
   else
-    raise "supported key type `#{key_type}` for map value"
+    raise "unsupported key type `#{key_type}` for map"
   end
 end
 
@@ -119,7 +119,18 @@ def map_value_struct(key_type)
   when 'string'
     'bsonmodel.BaseStringObjectMapValue'
   else
-    raise "supported key type `#{key_type}` for map value"
+    raise "unsupported key type `#{key_type}` for map"
+  end
+end
+
+def simple_array_jsoniner_parser(value_type)
+  case value_type
+  when 'int'
+    'bsonmodel.AnyIntArrayValue'
+  when 'string'
+    'bsonmodel.AnyStringArrayValue'
+  else
+    raise "unsupported value type `#{value_type}` for simple list"
   end
 end
 
@@ -209,6 +220,15 @@ def fill_interface(code, super_interface, cfg)
     when 'simple-map'
       key_type = field['key']
       code << tabs(1, "#{camel}() #{simple_map_type(key_type)}")
+    when 'simple-list'
+      value_type = field['value']
+      unless %w(int string).include? value_type
+        raise "unsupported value type `#{value_type}` on #{cfg['name']}.#{field['name']}"
+      end
+      code << tabs(1, "#{camel}() []#{value_type}")
+      unless field['virtual'] == true
+        code << tabs(1, "Set#{camel}(#{name} []#{value_type})")
+      end
     else
       raise "unsupported field type `#{field['type']}` on #{cfg['name']}.#{field['name']}"
     end
@@ -290,6 +310,8 @@ def fill_struct(code, cfg, super_struct=nil)
     when 'simple-map'
       key_type = field['key']
       code << tabs(1, "#{fix_space(name, max_len)} #{simple_map_type(key_type)}")
+    when 'simple-list'
+      code << tabs(1, "#{fix_space(name, max_len)} []#{field['value']}")
     else
       raise "unsupported field type `#{field['type']}` on #{cfg['name']}.#{name}"
     end
@@ -308,16 +330,21 @@ def fill_to_data(code, cfg)
   code << tabs(1, "data := make(map[string]interface{})")
   cfg['fields'].each do |field|
     next if field['virtual'] == true
-    type = field['type']
-    case 
-    when %w(object map simple-map).include?(type)
+    if %w(object map simple-map).include? field['type']
       code << tabs(1, "data[\"#{field['bname']}\"] = self.#{field['name']}.ToData()")
-    when type == 'datetime'
-      code << tabs(1, "data[\"#{field['bname']}\"] = self.#{field['name']}.UnixMilli()")
-    when type == 'date'
-      code << tabs(1, "data[\"#{field['bname']}\"] = bsonmodel.DateToNumber(self.#{field['name']})")
     else
-      code << tabs(1, "data[\"#{field['bname']}\"] = self.#{field['name']}")
+      case field['type']
+      when 'datetime'
+        code << tabs(1, "data[\"#{field['bname']}\"] = self.#{field['name']}.UnixMilli()")
+      when 'date'
+        code << tabs(1, "data[\"#{field['bname']}\"] = bsonmodel.DateToNumber(self.#{field['name']})")
+      when 'simple-list'
+        code << tabs(1, "if self.#{field['name']} != nil {")
+        code << tabs(2, "data[\"#{field['bname']}\"] = self.#{field['name']}")
+        code << tabs(1, "}")
+      else
+        code << tabs(1, "data[\"#{field['bname']}\"] = self.#{field['name']}")
+      end
     end
   end
   code << tabs(1, "return data")
@@ -332,6 +359,7 @@ def fill_load_jsoniter(code, cfg, is_root = false)
   end
   code << tabs(2, "return nil")
   code << tabs(1, "}")
+  err_defined = false
   cfg['fields'].each do |field|
     next if field['virtual'] == true
     name = field['name']
@@ -344,6 +372,7 @@ def fill_load_jsoniter(code, cfg, is_root = false)
       code << tabs(2, "return err")
       code << tabs(1, "}")
       code << tabs(1, "self.#{name} = #{name}")
+      err_defined = true
     when 'string'
       default = field.has_key?('default') ? field['default'].to_s : ''
       code << tabs(1, "#{name}, err := bsonmodel.AnyStringValue(any.Get(\"#{bname}\"), \"#{default}\")")
@@ -351,6 +380,7 @@ def fill_load_jsoniter(code, cfg, is_root = false)
       code << tabs(2, "return err")
       code << tabs(1, "}")
       code << tabs(1, "self.#{name} = #{name}")
+      err_defined = true
     when 'float64'
       default = field.has_key?('default') ? field['default'] : '0'
       code << tabs(1, "#{name}, err := bsonmodel.AnyFloat64Value(any.Get(\"#{bname}\"), #{default})")
@@ -358,22 +388,25 @@ def fill_load_jsoniter(code, cfg, is_root = false)
       code << tabs(2, "return err")
       code << tabs(1, "}")
       code << tabs(1, "self.#{name} = #{name}")
+      err_defined = true
     when 'datetime'
       code << tabs(1, "#{name}, err := bsonmodel.AnyDateTimeValue(any.Get(\"#{bname}\"))")
       code << tabs(1, "if err != nil {")
       code << tabs(2, "return err")
       code << tabs(1, "}")
       code << tabs(1, "self.#{name} = #{name}")
+      err_defined = true
     when 'date'
       code << tabs(1, "#{name}, err := bsonmodel.AnyDateValue(any.Get(\"#{bname}\"))")
       code << tabs(1, "if err != nil {")
       code << tabs(2, "return err")
       code << tabs(1, "}")
       code << tabs(1, "self.#{name} = #{name}")
+      err_defined = true
     when 'object'
       code << tabs(1, "#{name} := any.Get(\"#{bname}\")")
       code << tabs(1, "if #{name}.ValueType() == jsoniter.ObjectValue {")
-      code << tabs(2, "err = self.#{name}.LoadJsoniter(#{name})")
+      code << tabs(2, "err #{err_defined ? '=' : ':='} self.#{name}.LoadJsoniter(#{name})")
       code << tabs(2, "if err != nil {")
       code << tabs(3, "return err")
       code << tabs(2, "}")
@@ -381,7 +414,7 @@ def fill_load_jsoniter(code, cfg, is_root = false)
     when 'map'
       code << tabs(1, "#{name} := any.Get(\"#{bname}\")")
       code << tabs(1, "if #{name}.ValueType() == jsoniter.ObjectValue {")
-      code << tabs(2, "err = self.#{name}.LoadJsoniter(#{name})")
+      code << tabs(2, "err #{err_defined ? '=' : ':='} self.#{name}.LoadJsoniter(#{name})")
       code << tabs(2, "if err != nil {")
       code << tabs(3, "return err")
       code << tabs(2, "}")
@@ -391,13 +424,20 @@ def fill_load_jsoniter(code, cfg, is_root = false)
     when 'simple-map'
       code << tabs(1, "#{name} := any.Get(\"#{bname}\")")
       code << tabs(1, "if #{name}.ValueType() == jsoniter.ObjectValue {")
-      code << tabs(2, "err = self.#{name}.LoadJsoniter(#{name})")
+      code << tabs(2, "err #{err_defined ? '=' : ':='} self.#{name}.LoadJsoniter(#{name})")
       code << tabs(2, "if err != nil {")
       code << tabs(3, "return err")
       code << tabs(2, "}")
       code << tabs(1, "} else {")
       code << tabs(2, "self.#{name}.Reset()")
       code << tabs(1, "}")
+    when 'simple-list'
+      code << tabs(1, "#{name}, err := #{simple_array_jsoniner_parser(field['value'])}(any.Get(\"#{bname}\"))")
+      code << tabs(1, "if err != nil {")
+      code << tabs(2, "return err")
+      code << tabs(1, "}")
+      code << tabs(1, "self.#{name} = #{name}")
+      err_defined = true
     end
   end
   if is_root
@@ -461,6 +501,16 @@ def fill_append_updates(code, cfg)
           code << tabs(2, "dset[\"#{bname}\"] = primitive.NewDateTimeFromTime(self.#{name})")
         when 'date'
           code << tabs(2, "dset[\"#{bname}\"] = bsonmodel.DateToNumber(self.#{name})")
+        when 'simple-list'
+          code << tabs(2, "if self.#{name} == nil {")
+          code << tabs(3, "bsonmodel.FixedEmbedded(updates, \"$unset\")[\"#{bname}\"] = \"\"")
+          code << tabs(2, "} else {")
+          code << tabs(3, "#{name}Array := bson.A{}")
+          code << tabs(3, "for _, v := range self.#{name} {")
+          code << tabs(4, "#{name}Array = append(#{name}Array, v)")
+          code << tabs(3, "}")
+          code << tabs(3, "dset[\"#{bname}\"] = #{name}Array")
+          code << tabs(2, "}")
         else
           code << tabs(2, "dset[\"#{bname}\"] = self.#{name}")
         end
@@ -487,6 +537,16 @@ def fill_append_updates(code, cfg)
           code << tabs(3, "dset[xpath.Resolve(\"#{bname}\").Value()] = primitive.NewDateTimeFromTime(self.#{name}}")
         when 'date'
           code << tabs(3, "dset[xpath.Resolve(\"#{bname}\").Value()] = bsonmodel.DateToNumber(self.#{name}}")
+        when 'simple-list'
+          code << tabs(3, "if self.#{name} == nil {")
+          code << tabs(4, "bsonmodel.FixedEmbedded(updates, \"$unset\")[xpath.Resolve(\"#{bname}\").Value()] = \"\"")
+          code << tabs(3, "} else {")
+          code << tabs(4, "#{name}Array := bson.A{}")
+          code << tabs(4, "for _, v := range self.#{name} {")
+          code << tabs(5, "#{name}Array = append(#{name}Array, v)")
+          code << tabs(4, "}")
+          code << tabs(4, "dset[xpath.Resolve(\"#{bname}\").Value()] = #{name}Array")
+          code << tabs(3, "}")
         else
           code << tabs(3, "dset[xpath.Resolve(\"#{bname}\").Value()] = self.#{name}")
         end
@@ -514,6 +574,13 @@ def fill_to_document(code, cfg)
         code << tabs(1, "doc[\"#{bname}\"] = primitive.NewDateTimeFromTime(self.#{name})")
       when 'date'
         code << tabs(1, "doc[\"#{bname}\"] = bsonmodel.DateToNumber(self.#{name})")
+      when 'simple-list'
+        code << tabs(1, "if self.#{name} != nil {")
+        code << tabs(2, "#{name}Array := bson.A{}")
+        code << tabs(2, "for _, v := range #{name}Array {")
+        code << tabs(3, "#{name}Array = append(#{name}Array, v)")
+        code << tabs(2, "}")
+        code << tabs(1, "}")
       else
         code << tabs(1, "doc[\"#{bname}\"] = self.#{name}")
       end
@@ -600,6 +667,21 @@ def fill_load_document(code, cfg, is_root = false)
       code << tabs(1, "} else {")
       code << tabs(2, "self.#{name}.Clear()")
       code << tabs(1, "}")
+    when 'simple-list'
+      case field['value']
+      when 'int'
+        code << tabs(1, "#{name}, err := bsonmodel.IntArrayValue(document, \"#{bname}\")")
+        code << tabs(1, "if err != nil {")
+        code << tabs(2, "return err")
+        code << tabs(1, "}")
+        code << tabs(1, "self.#{name} = #{name}")
+      when 'string'
+        code << tabs(1, "#{name}, err := bsonmodel.StringArrayValue(document, \"#{bname}\")")
+        code << tabs(1, "if err != nil {")
+        code << tabs(2, "return err")
+        code << tabs(1, "}")
+        code << tabs(1, "self.#{name} = #{name}")
+      end
     end
   end
   if is_root
@@ -611,17 +693,18 @@ end
 
 def fill_deleted_size(code, cfg)
   code << "func (self *default#{cfg['name']}) DeletedSize() int {\n"
-  children = cfg['fields'].select do |field|
-    %w(object map simple-map).include? field['type']
-  end.map do |field|
-    field['name']
-  end
-  if children.empty?
+  if cfg['fields'].none? { |field| %w(object map simple-map simple-list).include? field['type'] }
     code << tabs(1, "return 0")
   else
     code << tabs(1, "n := 0")
-    children.each do |name|
-      code << tabs(1, "if self.#{name}.AnyDeleted() {")
+    cfg['fields'].each_with_index do |field, index|
+      next unless %w(object map simple-map simple-list).include? field['type']
+      name = field['name']
+      if field['type'] == 'simple-list'
+        code << tabs(1, "if self.updatedFields.Test(#{index + 1}) && self.#{name} == nil {")
+      else
+        code << tabs(1, "if self.#{name}.AnyDeleted() {")
+      end
       code << tabs(2, "n += 1")
       code << tabs(1, "}")
     end
@@ -681,6 +764,10 @@ def fill_to_sync(code, cfg, is_root = false)
         else
           lines << tabs(2, "sync[\"#{name}\"] = bsonmodel.DateToNumber(self.#{name})")
         end
+      when 'simple-list'
+        lines << tabs(2, "if self.#{name} != nil {")
+        lines << tabs(3, "sync[\"#{name}\"] = self.#{name}")
+        lines << tabs(2, "}")
       else
         if field['virtual'] == true
           lines << tabs(2, "sync[\"#{name}\"] = self.#{to_camel(name)}()")
@@ -708,6 +795,10 @@ def fill_to_delete(code, cfg)
     if %w(object map simple-map).include? field['type']
       code << tabs(1, "if self.#{name}.AnyDeleted() {")
       code << tabs(2, "delete[\"#{name}\"] = self.#{name}.ToDelete()")
+      code << tabs(1, "}")
+    elsif 'simple-list' == field['type']
+      code << tabs(1, "if self.updatedFields.Test(#{index + 1}) {")
+      code << tabs(2, "delete[\"#{name}\"] = 1")
       code << tabs(1, "}")
     end
   end
@@ -907,6 +998,20 @@ def fill_xetters(code, cfg)
       key_type = field['key']
       code << "func (self *default#{cfg['name']}) #{camel}() #{simple_map_type(key_type)} {\n"
       code << tabs(1, "return self.#{name}")
+      code << "}\n\n"
+    when 'simple-list'
+      value_type = field['value']
+      code << "func (self *default#{cfg['name']}) #{camel}() []#{value_type} {\n"
+      code << tabs(1, "return self.#{name}")
+      code << "}\n\n"
+      code << "func (self *default#{cfg['name']}) Set#{camel}(#{name} []#{value_type}) {\n"
+      code << tabs(1, "self.#{name} = #{name}")
+      code << tabs(1, "self.updatedFields.Set(#{index + 1})")
+      if field.has_key? 'relations'
+        field['relations'].each do |relation_index|
+          code << tabs(1, "self.updatedFields.Set(#{relation_index})")
+        end
+      end
       code << "}\n\n"
     else
       raise "unsupported field type `#{field['type']}` on #{cfg['name']}.#{field['name']}"

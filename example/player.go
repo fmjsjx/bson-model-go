@@ -19,6 +19,7 @@ type Player interface {
 	Equipments() bsonmodel.StringObjectMapModel
 	Equipment(id string) Equipment
 	Items() bsonmodel.IntSimpleMapModel
+	Cash() CashInfo
 	UpdateVersion() int
 	SetUpdateVersion(updateVersion int)
 	IncreaseUpdateVersion() int
@@ -33,6 +34,7 @@ const (
 	BnamePlayerWallet        = "wlt"
 	BnamePlayerEquipments    = "eqm"
 	BnamePlayerItems         = "itm"
+	BnamePlayerCash          = "cs"
 	BnamePlayerUpdateVersion = "_uv"
 	BnamePlayerCreateTime    = "_ct"
 	BnamePlayerUpdateTime    = "_ut"
@@ -44,6 +46,7 @@ type defaultPlayer struct {
 	wallet        Wallet
 	equipments    bsonmodel.StringObjectMapModel
 	items         bsonmodel.IntSimpleMapModel
+	cash          CashInfo
 	updateVersion int
 	createTime    time.Time
 	updateTime    time.Time
@@ -59,6 +62,7 @@ func (self *defaultPlayer) ToData() interface{} {
 	data["wlt"] = self.wallet.ToData()
 	data["eqm"] = self.equipments.ToData()
 	data["itm"] = self.items.ToData()
+	data["cs"] = self.cash.ToData()
 	data["_uv"] = self.updateVersion
 	data["_ct"] = self.createTime.UnixMilli()
 	data["_ut"] = self.updateTime.UnixMilli()
@@ -100,6 +104,13 @@ func (self *defaultPlayer) LoadJsoniter(any jsoniter.Any) error {
 	} else {
 		self.items.Reset()
 	}
+	cash := any.Get("cs")
+	if cash.ValueType() == jsoniter.ObjectValue {
+		err = self.cash.LoadJsoniter(cash)
+		if err != nil {
+			return err
+		}
+	}
 	updateVersion, err := bsonmodel.AnyIntValue(any.Get("_uv"), 0)
 	if err != nil {
 		return err
@@ -123,11 +134,12 @@ func (self *defaultPlayer) Reset() {
 	self.wallet.Reset()
 	self.equipments.Reset()
 	self.items.Reset()
+	self.cash.Reset()
 	self.updatedFields.ClearAll()
 }
 
 func (self *defaultPlayer) AnyUpdated() bool {
-	return self.updatedFields.Any() || self.wallet.AnyUpdated() || self.equipments.AnyUpdated() || self.items.AnyUpdated()
+	return self.updatedFields.Any() || self.wallet.AnyUpdated() || self.equipments.AnyUpdated() || self.items.AnyUpdated() || self.cash.AnyUpdated()
 }
 
 func (self *defaultPlayer) AnyDeleted() bool {
@@ -157,13 +169,16 @@ func (self *defaultPlayer) AppendUpdates(updates bson.M) bson.M {
 	if self.items.AnyUpdated() {
 		self.items.AppendUpdates(updates)
 	}
-	if updatedFields.Test(5) {
-		dset["_uv"] = self.updateVersion
+	if self.cash.AnyUpdated() {
+		self.cash.AppendUpdates(updates)
 	}
 	if updatedFields.Test(6) {
-		dset["_ct"] = primitive.NewDateTimeFromTime(self.createTime)
+		dset["_uv"] = self.updateVersion
 	}
 	if updatedFields.Test(7) {
+		dset["_ct"] = primitive.NewDateTimeFromTime(self.createTime)
+	}
+	if updatedFields.Test(8) {
 		dset["_ut"] = primitive.NewDateTimeFromTime(self.updateTime)
 	}
 	return updates
@@ -175,6 +190,7 @@ func (self *defaultPlayer) ToDocument() bson.M {
 	doc["wlt"] = self.wallet.ToBson()
 	doc["eqm"] = self.equipments.ToBson()
 	doc["itm"] = self.items.ToBson()
+	doc["cs"] = self.cash.ToBson()
 	doc["_uv"] = self.updateVersion
 	doc["_ct"] = primitive.NewDateTimeFromTime(self.createTime)
 	doc["_ut"] = primitive.NewDateTimeFromTime(self.updateTime)
@@ -221,6 +237,16 @@ func (self *defaultPlayer) LoadDocument(document bson.M) error {
 	} else {
 		self.items.Clear()
 	}
+	cash, err := bsonmodel.EmbeddedValue(document, "cs")
+	if err != nil {
+		return err
+	}
+	if cash != nil {
+		err = self.cash.LoadDocument(cash)
+		if err != nil {
+			return err
+		}
+	}
 	updateVersion, err := bsonmodel.IntValue(document, "_uv", 0)
 	if err != nil {
 		return err
@@ -251,6 +277,9 @@ func (self *defaultPlayer) DeletedSize() int {
 	if self.items.AnyDeleted() {
 		n += 1
 	}
+	if self.cash.AnyDeleted() {
+		n += 1
+	}
 	return n
 }
 
@@ -277,6 +306,9 @@ func (self *defaultPlayer) ToSync() interface{} {
 	if self.items.AnyUpdated() {
 		sync["items"] = self.items.ToSync()
 	}
+	if self.cash.AnyUpdated() {
+		sync["cash"] = self.cash.ToSync()
+	}
 	return sync
 }
 
@@ -290,6 +322,9 @@ func (self *defaultPlayer) ToDelete() interface{} {
 	}
 	if self.items.AnyDeleted() {
 		delete["items"] = self.items.ToDelete()
+	}
+	if self.cash.AnyDeleted() {
+		delete["cash"] = self.cash.ToDelete()
 	}
 	return delete
 }
@@ -336,6 +371,10 @@ func (self *defaultPlayer) Items() bsonmodel.IntSimpleMapModel {
 	return self.items
 }
 
+func (self *defaultPlayer) Cash() CashInfo {
+	return self.cash
+}
+
 func (self *defaultPlayer) UpdateVersion() int {
 	return self.updateVersion
 }
@@ -343,14 +382,14 @@ func (self *defaultPlayer) UpdateVersion() int {
 func (self *defaultPlayer) SetUpdateVersion(updateVersion int) {
 	if self.updateVersion != updateVersion {
 		self.updateVersion = updateVersion
-		self.updatedFields.Set(5)
+		self.updatedFields.Set(6)
 	}
 }
 
 func (self *defaultPlayer) IncreaseUpdateVersion() int {
 	updateVersion := self.updateVersion + 1
 	self.updateVersion = updateVersion
-	self.updatedFields.Set(5)
+	self.updatedFields.Set(6)
 	return updateVersion
 }
 
@@ -361,7 +400,7 @@ func (self *defaultPlayer) CreateTime() time.Time {
 func (self *defaultPlayer) SetCreateTime(createTime time.Time) {
 	if self.createTime != createTime {
 		self.createTime = createTime
-		self.updatedFields.Set(6)
+		self.updatedFields.Set(7)
 	}
 }
 
@@ -372,7 +411,7 @@ func (self *defaultPlayer) UpdateTime() time.Time {
 func (self *defaultPlayer) SetUpdateTime(updateTime time.Time) {
 	if self.updateTime != updateTime {
 		self.updateTime = updateTime
-		self.updatedFields.Set(7)
+		self.updatedFields.Set(8)
 	}
 }
 
@@ -381,6 +420,7 @@ func NewPlayer() Player {
 	self.wallet = NewWallet(self)
 	self.equipments = bsonmodel.NewStringObjectMapModel(self, "eqm", EquipmentFactory())
 	self.items = bsonmodel.NewIntSimpleMapModel(self, "itm", bsonmodel.IntValueType())
+	self.cash = NewCashInfo(self)
 	return self
 }
 
@@ -416,6 +456,9 @@ func (codec *playerEncoder) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) 
 	stream.WriteMore()
 	stream.WriteObjectField("items")
 	stream.WriteVal(p.items)
+	stream.WriteMore()
+	stream.WriteObjectField("cash")
+	stream.WriteVal(p.cash)
 	stream.WriteObjectEnd()
 }
 

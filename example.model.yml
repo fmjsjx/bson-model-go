@@ -23,6 +23,10 @@ objects:
     type: simple-map
     key: int
     value: int
+  - name: cash
+    bname: cs
+    type: object
+    model: CashInfo
   - name: updateVersion
     bname: _uv
     type: int
@@ -71,3 +75,15 @@ objects:
     type: int
   - name: hp
     type: int
+- name: CashInfo
+  type: object
+  fields:
+  - name: stages
+    bname: stg
+    type: simple-map
+    key: int
+    value: int
+  - name: cards
+    bname: cs
+    type: simple-list
+    value: int
