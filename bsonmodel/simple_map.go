@@ -429,6 +429,33 @@ func (imap *intSimpleMap) LoadDocument(document bson.M) error {
 	return nil
 }
 
+func (imap *intSimpleMap) ToSync() interface{} {
+	sync := make(map[string]interface{})
+	updatedKeys := imap.updatedKeys
+	data := imap.data
+	if updatedKeys.Cardinality() > 0 {
+		valueType := imap.valueType
+		for _, uk := range updatedKeys.ToSlice() {
+			key := uk.(int)
+			value := data[key]
+			sync[strconv.Itoa(key)] = valueType.ToData(value)
+		}
+	}
+	return sync
+}
+
+func (imap *intSimpleMap) ToDelete() interface{} {
+	delete := make(map[string]int)
+	removedKeys := imap.removedKeys
+	if removedKeys.Cardinality() > 0 {
+		for _, uk := range removedKeys.ToSlice() {
+			key := uk.(int)
+			delete[strconv.Itoa(key)] = 1
+		}
+	}
+	return delete
+}
+
 func NewIntSimpleMapModel(parent BsonModel, name string, valueType SimpleValueType) IntSimpleMapModel {
 	mapModel := &intSimpleMap{}
 	mapModel.parent = parent
@@ -603,6 +630,33 @@ func (smap *stringSimpleMap) LoadDocument(document bson.M) error {
 		data[key] = v
 	}
 	return nil
+}
+
+func (smap *stringSimpleMap) ToSync() interface{} {
+	sync := make(map[string]interface{})
+	updatedKeys := smap.updatedKeys
+	data := smap.data
+	if updatedKeys.Cardinality() > 0 {
+		valueType := smap.valueType
+		for _, uk := range updatedKeys.ToSlice() {
+			key := uk.(string)
+			value := data[key]
+			sync[key] = valueType.ToData(value)
+		}
+	}
+	return sync
+}
+
+func (smap *stringSimpleMap) ToDelete() interface{} {
+	delete := make(map[string]int)
+	removedKeys := smap.removedKeys
+	if removedKeys.Cardinality() > 0 {
+		for _, uk := range removedKeys.ToSlice() {
+			key := uk.(string)
+			delete[key] = 1
+		}
+	}
+	return delete
 }
 
 func NewStringSimpleMapModel(parent BsonModel, name string, valueType SimpleValueType) StringSimpleMapModel {

@@ -81,7 +81,7 @@ func main() {
 		fmt.Printf("failed: %e\n", err)
 	}
 	now := time.Now()
-	doc := bson.M{"_id": int32(123), "wt": bson.M{"ct": int32(5000), "cu": int32(2000), "d": int32(10)}, "eqm": bson.M{"12345678-1234-5678-9abc-123456789abc": bson.M{"id": "12345678-1234-5678-9abc-123456789abc", "rid": int32(1), "atk": int32(12), "def": int32(2), "hp": int32(100)}}, "itm": bson.M{"2001": int32(10), "2002": int32(1)}, "_uv": int32(1), "_ct": primitive.NewDateTimeFromTime(now), "_ut": primitive.NewDateTimeFromTime(now)}
+	doc := bson.M{"_id": int32(123), "wlt": bson.M{"ct": int32(5000), "cu": int32(2000), "d": int32(10)}, "eqm": bson.M{"12345678-1234-5678-9abc-123456789abc": bson.M{"id": "12345678-1234-5678-9abc-123456789abc", "rid": int32(1), "atk": int32(12), "def": int32(2), "hp": int32(100)}}, "itm": bson.M{"2001": int32(10), "2002": int32(1)}, "_uv": int32(1), "_ct": primitive.NewDateTimeFromTime(now), "_ut": primitive.NewDateTimeFromTime(now)}
 	player, err := example.LoadPlayerFromDocument(doc)
 	if err != nil {
 		fmt.Printf("Load player failed: %e\n", err)
@@ -116,7 +116,7 @@ func main() {
 		fmt.Printf("failed: %e\n", err)
 	}
 	any := jsoniter.Get([]byte(json))
-	fmt.Printf("any => %v\n", any)
+	fmt.Printf("any => %s\n", any.ToString())
 	player, err = example.LoadPlayerFromJsoniter(any)
 	if err != nil {
 		fmt.Printf("Load player failed: %e\n", err)

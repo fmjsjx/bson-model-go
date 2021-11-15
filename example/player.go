@@ -11,16 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-const (
-	BnamePlayerUid           = "_id"
-	BnamePlayerWallet        = "wt"
-	BnamePlayerEquipments    = "eqm"
-	BnamePlayerItems         = "itm"
-	BnamePlayerUpdateVersion = "_uv"
-	BnamePlayerCreateTime    = "_ct"
-	BnamePlayerUpdateTime    = "_ut"
-)
-
 type Player interface {
 	bsonmodel.RootModel
 	Uid() int
@@ -38,6 +28,16 @@ type Player interface {
 	SetUpdateTime(updateTime time.Time)
 }
 
+const (
+	BnamePlayerUid           = "_id"
+	BnamePlayerWallet        = "wlt"
+	BnamePlayerEquipments    = "eqm"
+	BnamePlayerItems         = "itm"
+	BnamePlayerUpdateVersion = "_uv"
+	BnamePlayerCreateTime    = "_ct"
+	BnamePlayerUpdateTime    = "_ut"
+)
+
 type defaultPlayer struct {
 	updatedFields *bitset.BitSet
 	uid           int
@@ -49,150 +49,150 @@ type defaultPlayer struct {
 	updateTime    time.Time
 }
 
-func (e *defaultPlayer) ToBson() interface{} {
-	return e.ToDocument()
+func (self *defaultPlayer) ToBson() interface{} {
+	return self.ToDocument()
 }
 
-func (p *defaultPlayer) ToData() interface{} {
+func (self *defaultPlayer) ToData() interface{} {
 	data := make(map[string]interface{})
-	data["_id"] = p.uid
-	data["wt"] = p.wallet.ToData()
-	data["eqm"] = p.equipments.ToData()
-	data["itm"] = p.items.ToData()
-	data["_uv"] = p.updateVersion
-	data["_ct"] = p.createTime.UnixMilli()
-	data["_ut"] = p.updateTime.UnixMilli()
+	data["_id"] = self.uid
+	data["wlt"] = self.wallet.ToData()
+	data["eqm"] = self.equipments.ToData()
+	data["itm"] = self.items.ToData()
+	data["_uv"] = self.updateVersion
+	data["_ct"] = self.createTime.UnixMilli()
+	data["_ut"] = self.updateTime.UnixMilli()
 	return data
 }
 
-func (p *defaultPlayer) LoadJsoniter(any jsoniter.Any) error {
+func (self *defaultPlayer) LoadJsoniter(any jsoniter.Any) error {
 	if any.ValueType() != jsoniter.ObjectValue {
-		p.Reset()
+		self.Reset()
 		return nil
 	}
 	uid, err := bsonmodel.AnyIntValue(any.Get("_id"), 0)
 	if err != nil {
 		return err
 	}
-	p.uid = uid
-	wallet := any.Get("wt")
+	self.uid = uid
+	wallet := any.Get("wlt")
 	if wallet.ValueType() == jsoniter.ObjectValue {
-		err = p.wallet.LoadJsoniter(wallet)
+		err = self.wallet.LoadJsoniter(wallet)
 		if err != nil {
 			return err
 		}
 	}
 	equipments := any.Get("eqm")
 	if equipments.ValueType() == jsoniter.ObjectValue {
-		err = p.equipments.LoadJsoniter(equipments)
+		err = self.equipments.LoadJsoniter(equipments)
 		if err != nil {
 			return err
 		}
 	} else {
-		p.equipments.Clear()
+		self.equipments.Clear()
 	}
 	items := any.Get("itm")
 	if items.ValueType() == jsoniter.ObjectValue {
-		err = p.items.LoadJsoniter(items)
+		err = self.items.LoadJsoniter(items)
 		if err != nil {
 			return err
 		}
 	} else {
-		p.items.Clear()
+		self.items.Reset()
 	}
 	updateVersion, err := bsonmodel.AnyIntValue(any.Get("_uv"), 0)
 	if err != nil {
 		return err
 	}
-	p.updateVersion = updateVersion
+	self.updateVersion = updateVersion
 	createTime, err := bsonmodel.AnyDateTimeValue(any.Get("_ct"))
 	if err != nil {
 		return err
 	}
-	p.createTime = createTime
+	self.createTime = createTime
 	updateTime, err := bsonmodel.AnyDateTimeValue(any.Get("_ut"))
 	if err != nil {
 		return err
 	}
-	p.updateTime = updateTime
-	p.Reset()
+	self.updateTime = updateTime
+	self.Reset()
 	return nil
 }
 
-func (p *defaultPlayer) Reset() {
-	p.wallet.Reset()
-	p.equipments.Reset()
-	p.items.Reset()
-	p.updatedFields.ClearAll()
+func (self *defaultPlayer) Reset() {
+	self.wallet.Reset()
+	self.equipments.Reset()
+	self.items.Reset()
+	self.updatedFields.ClearAll()
 }
 
-func (p *defaultPlayer) AnyUpdated() bool {
-	return p.updatedFields.Any() || p.wallet.AnyUpdated() || p.equipments.AnyUpdated() || p.items.AnyUpdated()
+func (self *defaultPlayer) AnyUpdated() bool {
+	return self.updatedFields.Any() || self.wallet.AnyUpdated() || self.equipments.AnyUpdated() || self.items.AnyUpdated()
 }
 
-func (p *defaultPlayer) AnyDeleted() bool {
-	return p.DeletedSize() > 0
+func (self *defaultPlayer) AnyDeleted() bool {
+	return self.DeletedSize() > 0
 }
 
-func (p *defaultPlayer) Parent() bsonmodel.BsonModel {
+func (self *defaultPlayer) Parent() bsonmodel.BsonModel {
 	return nil
 }
 
-func (p *defaultPlayer) XPath() bsonmodel.DotNotation {
+func (self *defaultPlayer) XPath() bsonmodel.DotNotation {
 	return bsonmodel.RootPath()
 }
 
-func (p *defaultPlayer) AppendUpdates(updates bson.M) bson.M {
+func (self *defaultPlayer) AppendUpdates(updates bson.M) bson.M {
 	dset := bsonmodel.FixedEmbedded(updates, "$set")
-	updatedFields := p.updatedFields
+	updatedFields := self.updatedFields
 	if updatedFields.Test(1) {
-		dset["id"] = p.uid
+		dset["_id"] = self.uid
 	}
-	if p.wallet.AnyUpdated() {
-		p.wallet.AppendUpdates(updates)
+	if self.wallet.AnyUpdated() {
+		self.wallet.AppendUpdates(updates)
 	}
-	if p.equipments.AnyUpdated() {
-		p.equipments.AppendUpdates(updates)
+	if self.equipments.AnyUpdated() {
+		self.equipments.AppendUpdates(updates)
 	}
-	if p.items.AnyUpdated() {
-		p.items.AppendUpdates(updates)
+	if self.items.AnyUpdated() {
+		self.items.AppendUpdates(updates)
 	}
 	if updatedFields.Test(5) {
-		dset["_uv"] = p.updateVersion
+		dset["_uv"] = self.updateVersion
 	}
 	if updatedFields.Test(6) {
-		dset["_ct"] = primitive.NewDateTimeFromTime(p.createTime)
+		dset["_ct"] = primitive.NewDateTimeFromTime(self.createTime)
 	}
 	if updatedFields.Test(7) {
-		dset["_ut"] = primitive.NewDateTimeFromTime(p.updateTime)
+		dset["_ut"] = primitive.NewDateTimeFromTime(self.updateTime)
 	}
 	return updates
 }
 
-func (p *defaultPlayer) ToDocument() bson.M {
+func (self *defaultPlayer) ToDocument() bson.M {
 	doc := bson.M{}
-	doc["_id"] = p.uid
-	doc["wt"] = p.wallet.ToBson()
-	doc["eqm"] = p.equipments.ToBson()
-	doc["itm"] = p.items.ToBson()
-	doc["_uv"] = p.updateVersion
-	doc["_ct"] = primitive.NewDateTimeFromTime(p.createTime)
-	doc["_ut"] = primitive.NewDateTimeFromTime(p.updateTime)
+	doc["_id"] = self.uid
+	doc["wlt"] = self.wallet.ToBson()
+	doc["eqm"] = self.equipments.ToBson()
+	doc["itm"] = self.items.ToBson()
+	doc["_uv"] = self.updateVersion
+	doc["_ct"] = primitive.NewDateTimeFromTime(self.createTime)
+	doc["_ut"] = primitive.NewDateTimeFromTime(self.updateTime)
 	return doc
 }
 
-func (p *defaultPlayer) LoadDocument(document bson.M) error {
+func (self *defaultPlayer) LoadDocument(document bson.M) error {
 	uid, err := bsonmodel.IntValue(document, "_id", 0)
 	if err != nil {
 		return err
 	}
-	p.uid = uid
-	wallet, err := bsonmodel.EmbeddedValue(document, "wt")
+	self.uid = uid
+	wallet, err := bsonmodel.EmbeddedValue(document, "wlt")
 	if err != nil {
 		return err
 	}
 	if wallet != nil {
-		err = p.wallet.LoadDocument(wallet)
+		err = self.wallet.LoadDocument(wallet)
 		if err != nil {
 			return err
 		}
@@ -202,154 +202,186 @@ func (p *defaultPlayer) LoadDocument(document bson.M) error {
 		return err
 	}
 	if equipments != nil {
-		err = p.equipments.LoadDocument(equipments)
+		err = self.equipments.LoadDocument(equipments)
 		if err != nil {
 			return err
 		}
 	} else {
-		p.equipments.Clear()
+		self.equipments.Clear()
 	}
 	items, err := bsonmodel.EmbeddedValue(document, "itm")
 	if err != nil {
 		return err
 	}
 	if items != nil {
-		err = p.items.LoadDocument(items)
+		err = self.items.LoadDocument(items)
 		if err != nil {
 			return err
 		}
 	} else {
-		p.items.Clear()
+		self.items.Clear()
 	}
 	updateVersion, err := bsonmodel.IntValue(document, "_uv", 0)
 	if err != nil {
 		return err
 	}
-	p.updateVersion = updateVersion
+	self.updateVersion = updateVersion
 	createTime, err := bsonmodel.DateTimeValue(document, "_ct")
 	if err != nil {
 		return err
 	}
-	p.createTime = createTime
+	self.createTime = createTime
 	updateTime, err := bsonmodel.DateTimeValue(document, "_ut")
 	if err != nil {
 		return err
 	}
-	p.updateTime = updateTime
-	p.Reset()
+	self.updateTime = updateTime
+	self.Reset()
 	return nil
 }
 
-func (p *defaultPlayer) DeletedSize() int {
+func (self *defaultPlayer) DeletedSize() int {
 	n := 0
-	if p.wallet.AnyDeleted() {
+	if self.wallet.AnyDeleted() {
 		n += 1
 	}
-	if p.equipments.AnyDeleted() {
+	if self.equipments.AnyDeleted() {
 		n += 1
 	}
-	if p.items.AnyDeleted() {
+	if self.items.AnyDeleted() {
 		n += 1
 	}
 	return n
 }
 
-func (p *defaultPlayer) FullyUpdate() bool {
+func (self *defaultPlayer) FullyUpdate() bool {
 	return false
 }
 
-func (p *defaultPlayer) SetFullyUpdate(fullyUpdate bool) {
+func (self *defaultPlayer) SetFullyUpdate(fullyUpdate bool) {
 	// no effect
 }
 
-func (p *defaultPlayer) ToUpdate() bson.M {
-	if p.AnyUpdated() {
-		return p.AppendUpdates(bson.M{})
+func (self *defaultPlayer) ToSync() interface{} {
+	sync := make(map[string]interface{})
+	updatedFields := self.updatedFields
+	if updatedFields.Test(1) {
+		sync["uid"] = self.uid
+	}
+	if self.wallet.AnyUpdated() {
+		sync["wallet"] = self.wallet.ToSync()
+	}
+	if self.equipments.AnyUpdated() {
+		sync["equipments"] = self.equipments.ToSync()
+	}
+	if self.items.AnyUpdated() {
+		sync["items"] = self.items.ToSync()
+	}
+	return sync
+}
+
+func (self *defaultPlayer) ToDelete() interface{} {
+	delete := make(map[string]interface{})
+	if self.wallet.AnyDeleted() {
+		delete["wallet"] = self.wallet.ToDelete()
+	}
+	if self.equipments.AnyDeleted() {
+		delete["equipments"] = self.equipments.ToDelete()
+	}
+	if self.items.AnyDeleted() {
+		delete["items"] = self.items.ToDelete()
+	}
+	return delete
+}
+
+func (self *defaultPlayer) ToUpdate() bson.M {
+	if self.AnyUpdated() {
+		return self.AppendUpdates(bson.M{})
 	}
 	return bson.M{}
 }
 
-func (p *defaultPlayer) MarshalToJsonString() (string, error) {
-	return jsoniter.MarshalToString(p)
+func (self *defaultPlayer) MarshalToJsonString() (string, error) {
+	return jsoniter.MarshalToString(self)
 }
 
-func (p *defaultPlayer) Uid() int {
-	return p.uid
+func (self *defaultPlayer) Uid() int {
+	return self.uid
 }
 
-func (p *defaultPlayer) SetUid(uid int) {
-	if p.uid != uid {
-		p.uid = uid
-		p.updatedFields.Set(1)
+func (self *defaultPlayer) SetUid(uid int) {
+	if self.uid != uid {
+		self.uid = uid
+		self.updatedFields.Set(1)
 	}
 }
 
-func (p *defaultPlayer) Wallet() Wallet {
-	return p.wallet
+func (self *defaultPlayer) Wallet() Wallet {
+	return self.wallet
 }
 
-func (p *defaultPlayer) Equipments() bsonmodel.StringObjectMapModel {
-	return p.equipments
+func (self *defaultPlayer) Equipments() bsonmodel.StringObjectMapModel {
+	return self.equipments
 }
 
-func (p *defaultPlayer) Equipment(id string) Equipment {
-	value := p.equipments.Get(id)
+func (self *defaultPlayer) Equipment(id string) Equipment {
+	value := self.equipments.Get(id)
 	if value == nil {
 		return nil
 	}
 	return value.(Equipment)
 }
 
-func (p *defaultPlayer) Items() bsonmodel.IntSimpleMapModel {
-	return p.items
+func (self *defaultPlayer) Items() bsonmodel.IntSimpleMapModel {
+	return self.items
 }
 
-func (p *defaultPlayer) UpdateVersion() int {
-	return p.updateVersion
+func (self *defaultPlayer) UpdateVersion() int {
+	return self.updateVersion
 }
 
-func (p *defaultPlayer) SetUpdateVersion(updateVersion int) {
-	if p.updateVersion != updateVersion {
-		p.updateVersion = updateVersion
-		p.updatedFields.Set(5)
+func (self *defaultPlayer) SetUpdateVersion(updateVersion int) {
+	if self.updateVersion != updateVersion {
+		self.updateVersion = updateVersion
+		self.updatedFields.Set(5)
 	}
 }
 
-func (p *defaultPlayer) IncreaseUpdateVersion() int {
-	updateVersion := p.updateVersion + 1
-	p.updateVersion = updateVersion
-	p.updatedFields.Set(5)
+func (self *defaultPlayer) IncreaseUpdateVersion() int {
+	updateVersion := self.updateVersion + 1
+	self.updateVersion = updateVersion
+	self.updatedFields.Set(5)
 	return updateVersion
 }
 
-func (p *defaultPlayer) CreateTime() time.Time {
-	return p.createTime
+func (self *defaultPlayer) CreateTime() time.Time {
+	return self.createTime
 }
 
-func (p *defaultPlayer) SetCreateTime(createTime time.Time) {
-	if p.createTime != createTime {
-		p.createTime = createTime
-		p.updatedFields.Set(6)
+func (self *defaultPlayer) SetCreateTime(createTime time.Time) {
+	if self.createTime != createTime {
+		self.createTime = createTime
+		self.updatedFields.Set(6)
 	}
 }
 
-func (p *defaultPlayer) UpdateTime() time.Time {
-	return p.updateTime
+func (self *defaultPlayer) UpdateTime() time.Time {
+	return self.updateTime
 }
 
-func (p *defaultPlayer) SetUpdateTime(updateTime time.Time) {
-	if p.updateTime != updateTime {
-		p.updateTime = updateTime
-		p.updatedFields.Set(7)
+func (self *defaultPlayer) SetUpdateTime(updateTime time.Time) {
+	if self.updateTime != updateTime {
+		self.updateTime = updateTime
+		self.updatedFields.Set(7)
 	}
 }
 
 func NewPlayer() Player {
-	player := &defaultPlayer{updatedFields: &bitset.BitSet{}}
-	player.wallet = NewWallet(player)
-	player.equipments = bsonmodel.NewStringObjectMapModel(player, "eqm", EquipmentFactory())
-	player.items = bsonmodel.NewIntSimpleMapModel(player, "itm", bsonmodel.IntValueType())
-	return player
+	self := &defaultPlayer{updatedFields: &bitset.BitSet{}}
+	self.wallet = NewWallet(self)
+	self.equipments = bsonmodel.NewStringObjectMapModel(self, "eqm", EquipmentFactory())
+	self.items = bsonmodel.NewIntSimpleMapModel(self, "itm", bsonmodel.IntValueType())
+	return self
 }
 
 func LoadPlayerFromDocument(m bson.M) (player Player, err error) {
@@ -390,3 +422,4 @@ func (codec *playerEncoder) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) 
 func init() {
 	jsoniter.RegisterTypeEncoder("example.defaultPlayer", &playerEncoder{})
 }
+

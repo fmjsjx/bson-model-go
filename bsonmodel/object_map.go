@@ -259,6 +259,36 @@ func (imap *intObjectMap) LoadDocument(document bson.M) error {
 	return nil
 }
 
+func (imap *intObjectMap) ToSync() interface{} {
+	sync := make(map[string]interface{})
+	data := imap.data
+	updatedKeys := imap.updatedKeys
+	if updatedKeys.Cardinality() > 0 {
+		for _, uk := range updatedKeys.ToSlice() {
+			key := uk.(int)
+			value := data[key]
+			if value.FullyUpdate() {
+				sync[strconv.Itoa(key)] = value.ToBson()
+			} else {
+				sync[strconv.Itoa(key)] = value.ToSync()
+			}
+		}
+	}
+	return sync
+}
+
+func (imap *intObjectMap) ToDelete() interface{} {
+	delete := make(map[string]int)
+	removedKeys := imap.removedKeys
+	if removedKeys.Cardinality() > 0 {
+		for _, uk := range removedKeys.ToSlice() {
+			key := uk.(int)
+			delete[strconv.Itoa(key)] = 1
+		}
+	}
+	return delete
+}
+
 func NewIntObjectMapModel(parent BsonModel, name string, valueFactory IntObjectMapValueFactory) IntObjectMapModel {
 	mapModel := &intObjectMap{}
 	mapModel.parent = parent
@@ -506,6 +536,36 @@ func (smap *stringObjectMap) LoadDocument(document bson.M) error {
 		v.setKey(key)
 	}
 	return nil
+}
+
+func (smap *stringObjectMap) ToSync() interface{} {
+	sync := make(map[string]interface{})
+	data := smap.data
+	updatedKeys := smap.updatedKeys
+	if updatedKeys.Cardinality() > 0 {
+		for _, uk := range updatedKeys.ToSlice() {
+			key := uk.(string)
+			value := data[key]
+			if value.FullyUpdate() {
+				sync[key] = value.ToBson()
+			} else {
+				sync[key] = value.ToSync()
+			}
+		}
+	}
+	return sync
+}
+
+func (smap *stringObjectMap) ToDelete() interface{} {
+	delete := make(map[string]int)
+	removedKeys := smap.removedKeys
+	if removedKeys.Cardinality() > 0 {
+		for _, uk := range removedKeys.ToSlice() {
+			key := uk.(string)
+			delete[key] = 1
+		}
+	}
+	return delete
 }
 
 func NewStringObjectMapModel(parent BsonModel, name string, valueFactory StringObjectMapValueFactory) StringObjectMapModel {

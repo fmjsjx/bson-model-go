@@ -41,21 +41,21 @@ type defaultEquipment struct {
 	hp            int
 }
 
-func (e *defaultEquipment) ToBson() interface{} {
-	return e.ToDocument()
+func (self *defaultEquipment) ToBson() interface{} {
+	return self.ToDocument()
 }
 
-func (e *defaultEquipment) ToData() interface{} {
+func (self *defaultEquipment) ToData() interface{} {
 	data := make(map[string]interface{})
-	data["id"] = e.id
-	data["rid"] = e.refId
-	data["atk"] = e.atk
-	data["def"] = e.def
-	data["hp"] = e.hp
+	data["id"] = self.id
+	data["rid"] = self.refId
+	data["atk"] = self.atk
+	data["def"] = self.def
+	data["hp"] = self.hp
 	return data
 }
 
-func (e *defaultEquipment) LoadJsoniter(any jsoniter.Any) error {
+func (self *defaultEquipment) LoadJsoniter(any jsoniter.Any) error {
 	if any.ValueType() != jsoniter.ObjectValue {
 		return nil
 	}
@@ -63,201 +63,210 @@ func (e *defaultEquipment) LoadJsoniter(any jsoniter.Any) error {
 	if err != nil {
 		return err
 	}
-	e.id = id
+	self.id = id
 	refId, err := bsonmodel.AnyIntValue(any.Get("rid"), 0)
 	if err != nil {
 		return err
 	}
-	e.refId = refId
+	self.refId = refId
 	atk, err := bsonmodel.AnyIntValue(any.Get("atk"), 0)
 	if err != nil {
 		return err
 	}
-	e.atk = atk
+	self.atk = atk
 	def, err := bsonmodel.AnyIntValue(any.Get("def"), 0)
 	if err != nil {
 		return err
 	}
-	e.def = def
+	self.def = def
 	hp, err := bsonmodel.AnyIntValue(any.Get("hp"), 0)
 	if err != nil {
 		return err
 	}
-	e.hp = hp
+	self.hp = hp
 	return nil
 }
 
-func (e *defaultEquipment) Reset() {
-	e.updatedFields.ClearAll()
+func (self *defaultEquipment) Reset() {
+	self.updatedFields.ClearAll()
 }
 
-func (e *defaultEquipment) AnyUpdated() bool {
-	return e.updatedFields.Any()
+func (self *defaultEquipment) AnyUpdated() bool {
+	return self.updatedFields.Any()
 }
 
-func (e *defaultEquipment) AnyDeleted() bool {
-	return e.DeletedSize() > 0
+func (self *defaultEquipment) AnyDeleted() bool {
+	return self.DeletedSize() > 0
 }
 
-func (e *defaultEquipment) AppendUpdates(updates bson.M) bson.M {
+func (self *defaultEquipment) AppendUpdates(updates bson.M) bson.M {
 	dset := bsonmodel.FixedEmbedded(updates, "$set")
-	xpath := e.XPath()
-	if e.FullyUpdate() {
-		dset[xpath.Value()] = e.ToDocument()
+	xpath := self.XPath()
+	if self.FullyUpdate() {
+		dset[xpath.Value()] = self.ToDocument()
 	} else {
-		updatedFields := e.updatedFields
+		updatedFields := self.updatedFields
 		if updatedFields.Test(1) {
-			dset[xpath.Resolve("id").Value()] = e.id
+			dset[xpath.Resolve("id").Value()] = self.id
 		}
 		if updatedFields.Test(2) {
-			dset[xpath.Resolve("rid").Value()] = e.refId
+			dset[xpath.Resolve("rid").Value()] = self.refId
 		}
 		if updatedFields.Test(3) {
-			dset[xpath.Resolve("atk").Value()] = e.atk
+			dset[xpath.Resolve("atk").Value()] = self.atk
 		}
 		if updatedFields.Test(4) {
-			dset[xpath.Resolve("def").Value()] = e.def
+			dset[xpath.Resolve("def").Value()] = self.def
 		}
 		if updatedFields.Test(5) {
-			dset[xpath.Resolve("hp").Value()] = e.hp
+			dset[xpath.Resolve("hp").Value()] = self.hp
 		}
 	}
 	return updates
 }
 
-func (e *defaultEquipment) ToDocument() bson.M {
+func (self *defaultEquipment) ToDocument() bson.M {
 	doc := bson.M{}
-	doc["id"] = e.id
-	doc["rid"] = e.refId
-	doc["atk"] = e.atk
-	doc["def"] = e.def
-	doc["hp"] = e.hp
+	doc["id"] = self.id
+	doc["rid"] = self.refId
+	doc["atk"] = self.atk
+	doc["def"] = self.def
+	doc["hp"] = self.hp
 	return doc
 }
 
-func (e *defaultEquipment) LoadDocument(document bson.M) error {
+func (self *defaultEquipment) LoadDocument(document bson.M) error {
 	id, err := bsonmodel.StringValue(document, "id", "")
 	if err != nil {
 		return err
 	}
-	e.id = id
+	self.id = id
 	refId, err := bsonmodel.IntValue(document, "rid", 0)
 	if err != nil {
 		return err
 	}
-	e.refId = refId
+	self.refId = refId
 	atk, err := bsonmodel.IntValue(document, "atk", 0)
 	if err != nil {
 		return err
 	}
-	e.atk = atk
+	self.atk = atk
 	def, err := bsonmodel.IntValue(document, "def", 0)
 	if err != nil {
 		return err
 	}
-	e.def = def
+	self.def = def
 	hp, err := bsonmodel.IntValue(document, "hp", 0)
 	if err != nil {
 		return err
 	}
-	e.hp = hp
+	self.hp = hp
 	return nil
 }
 
-func (e *defaultEquipment) DeletedSize() int {
+func (self *defaultEquipment) DeletedSize() int {
 	return 0
 }
 
-func (e *defaultEquipment) FullyUpdate() bool {
-	return e.updatedFields.Test(0)
+func (self *defaultEquipment) FullyUpdate() bool {
+	return self.updatedFields.Test(0)
 }
 
-func (e *defaultEquipment) SetFullyUpdate(fullyUpdate bool) {
+func (self *defaultEquipment) SetFullyUpdate(fullyUpdate bool) {
 	if fullyUpdate {
-		e.updatedFields.Set(0)
+		self.updatedFields.Set(0)
 	} else {
-		e.updatedFields.DeleteAt(0)
+		self.updatedFields.DeleteAt(0)
 	}
 }
 
-func (e *defaultEquipment) Id() string {
-	return e.id
+func (self *defaultEquipment) ToSync() interface{} {
+	if self.FullyUpdate() {
+		return self
+	}
+	sync := make(map[string]interface{})
+	updatedFields := self.updatedFields
+	if updatedFields.Test(1) {
+		sync["id"] = self.id
+	}
+	if updatedFields.Test(2) {
+		sync["refId"] = self.refId
+	}
+	if updatedFields.Test(3) {
+		sync["atk"] = self.atk
+	}
+	if updatedFields.Test(4) {
+		sync["def"] = self.def
+	}
+	if updatedFields.Test(5) {
+		sync["hp"] = self.hp
+	}
+	return sync
 }
 
-func (e *defaultEquipment) SetId(id string) {
-	if e.id != id {
-		e.id = id
-		e.updatedFields.Set(1)
-		p := e.Parent()
-		if p != nil {
-			p.(bsonmodel.StringObjectMapModel).SetUpdated(e.Key())
-		}
+func (self *defaultEquipment) ToDelete() interface{} {
+	delete := make(map[string]interface{})
+	return delete
+}
+
+func (self *defaultEquipment) Id() string {
+	return self.id
+}
+
+func (self *defaultEquipment) SetId(id string) {
+	if self.id != id {
+		self.id = id
+		self.updatedFields.Set(1)
 	}
 }
 
-func (e *defaultEquipment) RefId() int {
-	return e.refId
+func (self *defaultEquipment) RefId() int {
+	return self.refId
 }
 
-func (e *defaultEquipment) SetRefId(refId int) {
-	if e.refId != refId {
-		e.refId = refId
-		e.updatedFields.Set(2)
-		p := e.Parent()
-		if p != nil {
-			p.(bsonmodel.StringObjectMapModel).SetUpdated(e.Key())
-		}
+func (self *defaultEquipment) SetRefId(refId int) {
+	if self.refId != refId {
+		self.refId = refId
+		self.updatedFields.Set(2)
 	}
 }
 
-func (e *defaultEquipment) Atk() int {
-	return e.atk
+func (self *defaultEquipment) Atk() int {
+	return self.atk
 }
 
-func (e *defaultEquipment) SetAtk(atk int) {
-	if e.atk != atk {
-		e.atk = atk
-		e.updatedFields.Set(3)
-		p := e.Parent()
-		if p != nil {
-			p.(bsonmodel.StringObjectMapModel).SetUpdated(e.Key())
-		}
+func (self *defaultEquipment) SetAtk(atk int) {
+	if self.atk != atk {
+		self.atk = atk
+		self.updatedFields.Set(3)
 	}
 }
 
-func (e *defaultEquipment) Def() int {
-	return e.def
+func (self *defaultEquipment) Def() int {
+	return self.def
 }
 
-func (e *defaultEquipment) SetDef(def int) {
-	if e.def != def {
-		e.def = def
-		e.updatedFields.Set(4)
-		p := e.Parent()
-		if p != nil {
-			p.(bsonmodel.StringObjectMapModel).SetUpdated(e.Key())
-		}
+func (self *defaultEquipment) SetDef(def int) {
+	if self.def != def {
+		self.def = def
+		self.updatedFields.Set(4)
 	}
 }
 
-func (e *defaultEquipment) Hp() int {
-	return e.hp
+func (self *defaultEquipment) Hp() int {
+	return self.hp
 }
 
-func (e *defaultEquipment) SetHp(hp int) {
-	if e.hp != hp {
-		e.hp = hp
-		e.updatedFields.Set(5)
-		p := e.Parent()
-		if p != nil {
-			p.(bsonmodel.StringObjectMapModel).SetUpdated(e.Key())
-		}
+func (self *defaultEquipment) SetHp(hp int) {
+	if self.hp != hp {
+		self.hp = hp
+		self.updatedFields.Set(5)
 	}
 }
 
 func NewEquipment() Equipment {
-	equipment := &defaultEquipment{updatedFields: &bitset.BitSet{}}
-	return equipment
+	self := &defaultEquipment{updatedFields: &bitset.BitSet{}}
+	return self
 }
 
 var equipmentFactory bsonmodel.StringObjectMapValueFactory = func() bsonmodel.StringObjectMapValueModel {
@@ -275,25 +284,26 @@ func (codec *equipmentEncoder) IsEmpty(ptr unsafe.Pointer) bool {
 }
 
 func (codec *equipmentEncoder) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
-	e := ((*defaultEquipment)(ptr))
+	p := ((*defaultEquipment)(ptr))
 	stream.WriteObjectStart()
 	stream.WriteObjectField("id")
-	stream.WriteString(e.id)
+	stream.WriteString(p.id)
 	stream.WriteMore()
 	stream.WriteObjectField("refId")
-	stream.WriteInt(e.refId)
+	stream.WriteInt(p.refId)
 	stream.WriteMore()
 	stream.WriteObjectField("atk")
-	stream.WriteInt(e.atk)
+	stream.WriteInt(p.atk)
 	stream.WriteMore()
 	stream.WriteObjectField("def")
-	stream.WriteInt(e.def)
+	stream.WriteInt(p.def)
 	stream.WriteMore()
 	stream.WriteObjectField("hp")
-	stream.WriteInt(e.hp)
+	stream.WriteInt(p.hp)
 	stream.WriteObjectEnd()
 }
 
 func init() {
 	jsoniter.RegisterTypeEncoder("example.defaultEquipment", &equipmentEncoder{})
 }
+

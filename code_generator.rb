@@ -651,6 +651,70 @@ def fill_fully_update(code, cfg, is_root = false)
   code << "}\n\n"
 end
 
+def fill_to_sync(code, cfg, is_root = false)
+  code << "func (self *default#{cfg['name']}) ToSync() interface{} {\n"
+  unless is_root
+    code << tabs(1, "if self.FullyUpdate() {")
+    code << tabs(2, "return self")
+    code << tabs(1, "}")
+  end
+  code << tabs(1, "sync := make(map[string]interface{})")
+  lines = []
+  cfg['fields'].each_with_index do |field, index|
+    next if field['json-ignore'] == true
+    name = field['name']
+    if %w(object map simple-map).include? field['type']
+      lines << tabs(1, "if self.#{name}.AnyUpdated() {")
+      lines << tabs(2, "sync[\"#{name}\"] = self.#{name}.ToSync()")
+    else
+      lines << tabs(1, "if updatedFields.Test(#{index + 1}) {")
+      case field['type']
+      when 'datetime'
+        if field['virtual'] == true
+          lines << tabs(2, "sync[\"#{name}\"] = self.#{to_camel(name)}().Unix()")
+        else
+          lines << tabs(2, "sync[\"#{name}\"] = self.#{name}.Unix()")
+        end
+      when 'date'
+        if field['virtual'] == true
+          lines << tabs(2, "sync[\"#{name}\"] = bsonmodel.DateToNumber(self.#{to_camel(name)}())")
+        else
+          lines << tabs(2, "sync[\"#{name}\"] = bsonmodel.DateToNumber(self.#{name})")
+        end
+      else
+        if field['virtual'] == true
+          lines << tabs(2, "sync[\"#{name}\"] = self.#{to_camel(name)}()")
+        else
+          lines << tabs(2, "sync[\"#{name}\"] = self.#{name}")
+        end
+      end
+    end
+    lines << tabs(1, "}")
+  end
+  unless lines.empty?
+    code << tabs(1, "updatedFields := self.updatedFields")
+    code << lines.join
+  end
+  code << tabs(1, "return sync")
+  code << "}\n\n"
+end
+
+def fill_to_delete(code, cfg)
+  code << "func (self *default#{cfg['name']}) ToDelete() interface{} {\n"
+  code << tabs(1, "delete := make(map[string]interface{})")
+  cfg['fields'].each_with_index do |field, index|
+    next if field['json-ignore'] == true
+    name = field['name']
+    if %w(object map simple-map).include? field['type']
+      code << tabs(1, "if self.#{name}.AnyDeleted() {")
+      code << tabs(2, "delete[\"#{name}\"] = self.#{name}.ToDelete()")
+      code << tabs(1, "}")
+    end
+  end
+  code << tabs(1, "return delete")
+  code << "}\n\n"
+end
+
 def fill_xetters(code, cfg)
   fields = cfg['fields']
   fields.each_with_index do |field, index|
@@ -928,6 +992,8 @@ def generate_root(cfg)
   fill_load_document(code, cfg, true)
   fill_deleted_size(code, cfg)
   fill_fully_update(code, cfg, true)
+  fill_to_sync(code, cfg, true)
+  fill_to_delete(code, cfg)
   code << "func (self *default#{cfg['name']}) ToUpdate() bson.M {\n"
   code << tabs(1, "if self.AnyUpdated() {")
   code << tabs(2, "return self.AppendUpdates(bson.M{})")
@@ -994,6 +1060,8 @@ def generate_object(cfg)
   fill_load_document(code, cfg)
   fill_deleted_size(code, cfg)
   fill_fully_update(code, cfg)
+  fill_to_sync(code, cfg)
+  fill_to_delete(code, cfg)
   fill_xetters(code, cfg)
   fill_new(code, cfg, true)
   fill_encoder(code, cfg)
@@ -1018,6 +1086,8 @@ def generate_map_value(cfg)
   fill_load_document(code, cfg)
   fill_deleted_size(code, cfg)
   fill_fully_update(code, cfg)
+  fill_to_sync(code, cfg)
+  fill_to_delete(code, cfg)
   fill_xetters(code, cfg)
   fill_new(code, cfg)
   small_camel = to_small_camel(cfg['name'])

@@ -17,6 +17,8 @@ type BsonModel interface {
 	Parent() BsonModel
 	XPath() DotNotation
 	AppendUpdates(updates bson.M) bson.M
+	ToSync() interface{}
+	ToDelete() interface{}
 }
 
 type DocumentModel interface {

@@ -14,7 +14,7 @@ type Wallet interface {
 	CoinTotal() int
 	SetCoinTotal(coinTotal int)
 	CoinUsed() int
-	SetCoinUsed(coinTotal int)
+	SetCoinUsed(coinUsed int)
 	Coin() int
 	Diamond() int
 	SetDiamond(diamond int)
@@ -26,7 +26,7 @@ const (
 	BnameWalletDiamond   = "d"
 )
 
-var xpathWallet bsonmodel.DotNotation = bsonmodel.PathOfNames("wt")
+var xpathWallet bsonmodel.DotNotation = bsonmodel.PathOfNames("wlt")
 
 type defaultWallet struct {
 	updatedFields *bitset.BitSet
@@ -36,163 +36,186 @@ type defaultWallet struct {
 	diamond       int
 }
 
-func (w *defaultWallet) ToBson() interface{} {
-	return w.ToDocument()
+func (self *defaultWallet) ToBson() interface{} {
+	return self.ToDocument()
 }
 
-func (w *defaultWallet) ToData() interface{} {
+func (self *defaultWallet) ToData() interface{} {
 	data := make(map[string]interface{})
-	data["ct"] = w.coinTotal
-	data["cu"] = w.coinUsed
-	data["d"] = w.diamond
+	data["ct"] = self.coinTotal
+	data["cu"] = self.coinUsed
+	data["d"] = self.diamond
 	return data
 }
 
-func (w *defaultWallet) LoadJsoniter(any jsoniter.Any) error {
+func (self *defaultWallet) LoadJsoniter(any jsoniter.Any) error {
 	if any.ValueType() != jsoniter.ObjectValue {
 		return nil
 	}
-	ct, err := bsonmodel.AnyIntValue(any.Get("ct"), 0)
+	coinTotal, err := bsonmodel.AnyIntValue(any.Get("ct"), 0)
 	if err != nil {
 		return err
 	}
-	w.coinTotal = ct
-	cu, err := bsonmodel.AnyIntValue(any.Get("cu"), 0)
+	self.coinTotal = coinTotal
+	coinUsed, err := bsonmodel.AnyIntValue(any.Get("cu"), 0)
 	if err != nil {
 		return err
 	}
-	w.coinUsed = cu
-	d, err := bsonmodel.AnyIntValue(any.Get("d"), 0)
+	self.coinUsed = coinUsed
+	diamond, err := bsonmodel.AnyIntValue(any.Get("d"), 0)
 	if err != nil {
 		return err
 	}
-	w.diamond = d
+	self.diamond = diamond
 	return nil
 }
 
-func (w *defaultWallet) Reset() {
-	w.updatedFields.ClearAll()
+func (self *defaultWallet) Reset() {
+	self.updatedFields.ClearAll()
 }
 
-func (w *defaultWallet) AnyUpdated() bool {
-	return w.updatedFields.Any()
+func (self *defaultWallet) AnyUpdated() bool {
+	return self.updatedFields.Any()
 }
 
-func (w *defaultWallet) AnyDeleted() bool {
-	return w.DeletedSize() > 0
+func (self *defaultWallet) AnyDeleted() bool {
+	return self.DeletedSize() > 0
 }
 
-func (w *defaultWallet) Parent() bsonmodel.BsonModel {
-	return w.parent
+func (self *defaultWallet) Parent() bsonmodel.BsonModel {
+	return self.parent
 }
 
-func (w *defaultWallet) XPath() bsonmodel.DotNotation {
+func (self *defaultWallet) XPath() bsonmodel.DotNotation {
 	return xpathWallet
 }
 
-func (w *defaultWallet) AppendUpdates(updates bson.M) bson.M {
+func (self *defaultWallet) AppendUpdates(updates bson.M) bson.M {
 	dset := bsonmodel.FixedEmbedded(updates, "$set")
-	xpath := w.XPath()
-	if w.FullyUpdate() {
-		dset[xpath.Value()] = w.ToDocument()
+	xpath := self.XPath()
+	if self.FullyUpdate() {
+		dset[xpath.Value()] = self.ToDocument()
 	} else {
-		updatedFields := w.updatedFields
+		updatedFields := self.updatedFields
 		if updatedFields.Test(1) {
-			dset[xpath.Resolve("ct").Value()] = w.coinTotal
+			dset[xpath.Resolve("ct").Value()] = self.coinTotal
 		}
 		if updatedFields.Test(2) {
-			dset[xpath.Resolve("cu").Value()] = w.coinUsed
+			dset[xpath.Resolve("cu").Value()] = self.coinUsed
 		}
 		if updatedFields.Test(4) {
-			dset[xpath.Resolve("d").Value()] = w.diamond
+			dset[xpath.Resolve("d").Value()] = self.diamond
 		}
 	}
 	return updates
 }
 
-func (w *defaultWallet) ToDocument() bson.M {
+func (self *defaultWallet) ToDocument() bson.M {
 	doc := bson.M{}
-	doc["ct"] = w.coinTotal
-	doc["cu"] = w.coinUsed
-	doc["d"] = w.diamond
+	doc["ct"] = self.coinTotal
+	doc["cu"] = self.coinUsed
+	doc["d"] = self.diamond
 	return doc
 }
 
-func (w *defaultWallet) LoadDocument(document bson.M) error {
+func (self *defaultWallet) LoadDocument(document bson.M) error {
 	coinTotal, err := bsonmodel.IntValue(document, "ct", 0)
 	if err != nil {
 		return err
 	}
-	w.coinTotal = coinTotal
+	self.coinTotal = coinTotal
 	coinUsed, err := bsonmodel.IntValue(document, "cu", 0)
 	if err != nil {
 		return err
 	}
-	w.coinUsed = coinUsed
+	self.coinUsed = coinUsed
 	diamond, err := bsonmodel.IntValue(document, "d", 0)
 	if err != nil {
 		return err
 	}
-	w.diamond = diamond
+	self.diamond = diamond
 	return nil
 }
 
-func (w *defaultWallet) DeletedSize() int {
+func (self *defaultWallet) DeletedSize() int {
 	return 0
 }
 
-func (w *defaultWallet) FullyUpdate() bool {
-	return w.updatedFields.Test(0)
+func (self *defaultWallet) FullyUpdate() bool {
+	return self.updatedFields.Test(0)
 }
 
-func (w *defaultWallet) SetFullyUpdate(fullyUpdate bool) {
+func (self *defaultWallet) SetFullyUpdate(fullyUpdate bool) {
 	if fullyUpdate {
-		w.updatedFields.Set(0)
+		self.updatedFields.Set(0)
 	} else {
-		w.updatedFields.DeleteAt(0)
+		self.updatedFields.DeleteAt(0)
 	}
 }
 
-func (w *defaultWallet) CoinTotal() int {
-	return w.coinTotal
+func (self *defaultWallet) ToSync() interface{} {
+	if self.FullyUpdate() {
+		return self
+	}
+	sync := make(map[string]interface{})
+	updatedFields := self.updatedFields
+	if updatedFields.Test(1) {
+		sync["coinTotal"] = self.coinTotal
+	}
+	if updatedFields.Test(3) {
+		sync["coin"] = self.Coin()
+	}
+	if updatedFields.Test(4) {
+		sync["diamond"] = self.diamond
+	}
+	return sync
 }
 
-func (w *defaultWallet) SetCoinTotal(coinTotal int) {
-	if w.coinTotal != coinTotal {
-		w.coinTotal = coinTotal
-		w.updatedFields.Set(1)
+func (self *defaultWallet) ToDelete() interface{} {
+	delete := make(map[string]interface{})
+	return delete
+}
+
+func (self *defaultWallet) CoinTotal() int {
+	return self.coinTotal
+}
+
+func (self *defaultWallet) SetCoinTotal(coinTotal int) {
+	if self.coinTotal != coinTotal {
+		self.coinTotal = coinTotal
+		self.updatedFields.Set(1)
 	}
 }
 
-func (w *defaultWallet) CoinUsed() int {
-	return w.coinUsed
+func (self *defaultWallet) CoinUsed() int {
+	return self.coinUsed
 }
 
-func (w *defaultWallet) SetCoinUsed(coinUsed int) {
-	if w.coinTotal != coinUsed {
-		w.coinUsed = coinUsed
-		w.updatedFields.Set(2)
+func (self *defaultWallet) SetCoinUsed(coinUsed int) {
+	if self.coinUsed != coinUsed {
+		self.coinUsed = coinUsed
+		self.updatedFields.Set(2)
 	}
 }
 
-func (w *defaultWallet) Coin() int {
-	return w.coinTotal - w.coinUsed
+func (self *defaultWallet) Coin() int {
+	return self.coinTotal - self.coinUsed
 }
 
-func (w *defaultWallet) Diamond() int {
-	return w.diamond
+func (self *defaultWallet) Diamond() int {
+	return self.diamond
 }
 
-func (w *defaultWallet) SetDiamond(diamond int) {
-	if w.diamond != diamond {
-		w.diamond = diamond
-		w.updatedFields.Set(4)
+func (self *defaultWallet) SetDiamond(diamond int) {
+	if self.diamond != diamond {
+		self.diamond = diamond
+		self.updatedFields.Set(4)
 	}
 }
 
 func NewWallet(parent Player) Wallet {
-	wallet := &defaultWallet{updatedFields: &bitset.BitSet{}, parent: parent}
-	return wallet
+	self := &defaultWallet{updatedFields: &bitset.BitSet{}, parent: parent}
+	return self
 }
 
 type walletEncoder struct{}
@@ -202,19 +225,20 @@ func (codec *walletEncoder) IsEmpty(ptr unsafe.Pointer) bool {
 }
 
 func (codec *walletEncoder) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream) {
-	w := ((*defaultWallet)(ptr))
+	p := ((*defaultWallet)(ptr))
 	stream.WriteObjectStart()
 	stream.WriteObjectField("coinTotal")
-	stream.WriteInt(w.coinTotal)
+	stream.WriteInt(p.coinTotal)
 	stream.WriteMore()
 	stream.WriteObjectField("coin")
-	stream.WriteInt(w.Coin())
+	stream.WriteInt(p.Coin())
 	stream.WriteMore()
 	stream.WriteObjectField("diamond")
-	stream.WriteInt(w.diamond)
+	stream.WriteInt(p.diamond)
 	stream.WriteObjectEnd()
 }
 
 func init() {
 	jsoniter.RegisterTypeEncoder("example.defaultWallet", &walletEncoder{})
 }
+
