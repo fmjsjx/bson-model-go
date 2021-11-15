@@ -143,9 +143,12 @@ def fill_imports(code, cfg)
 	others << 'github.com/fmjsjx/bson-model-go/bsonmodel'
 	others << 'github.com/json-iterator/go'
 	others << 'go.mongodb.org/mongo-driver/bson'
-  if cfg['fields'].any? { |field| %w(datetime date).include? field['type'] }
+  if cfg['fields'].any? { |field| %w(datetime).include? field['type'] }
     stds << 'time'
     others << 'go.mongodb.org/mongo-driver/bson/primitive'
+  end
+  if cfg['fields'].any? { |field| %w(date).include? field['type'] }
+    stds << 'time'
   end
   code << "import (\n"
   stds.sort.each do |v|
@@ -300,7 +303,7 @@ def fill_struct(code, cfg, super_struct=nil)
       code << tabs(1, "#{fix_space(name, max_len)} float64")
     when 'datetime'
       code << tabs(1, "#{fix_space(name, max_len)} time.Time")
-    when 'time'
+    when 'date'
       code << tabs(1, "#{fix_space(name, max_len)} time.Time")
     when 'object'
       code << tabs(1, "#{fix_space(name, max_len)} #{field['model']}")
@@ -534,9 +537,9 @@ def fill_append_updates(code, cfg)
         code << tabs(2, "if updatedFields.Test(#{index + 1}) {")
         case field['type']
         when 'datetime'
-          code << tabs(3, "dset[xpath.Resolve(\"#{bname}\").Value()] = primitive.NewDateTimeFromTime(self.#{name}}")
+          code << tabs(3, "dset[xpath.Resolve(\"#{bname}\").Value()] = primitive.NewDateTimeFromTime(self.#{name})")
         when 'date'
-          code << tabs(3, "dset[xpath.Resolve(\"#{bname}\").Value()] = bsonmodel.DateToNumber(self.#{name}}")
+          code << tabs(3, "dset[xpath.Resolve(\"#{bname}\").Value()] = bsonmodel.DateToNumber(self.#{name})")
         when 'simple-list'
           code << tabs(3, "if self.#{name} == nil {")
           code << tabs(4, "bsonmodel.FixedEmbedded(updates, \"$unset\")[xpath.Resolve(\"#{bname}\").Value()] = \"\"")
@@ -860,7 +863,6 @@ def fill_xetters(code, cfg)
           code << "}\n\n"
         end
         if field['add'] == true
-          code << tabs(1, "Add#{camel}(#{name} int) int")
           code << "func (self *default#{cfg['name']}) Add#{camel}(#{name} int) int {\n"
           code << tabs(1, "new_#{name} := self.#{name} + #{name}")
           code << tabs(1, "self.#{name} = new_#{name}")
