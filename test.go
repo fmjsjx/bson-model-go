@@ -20,6 +20,20 @@ type Player struct {
 }
 
 func main() {
+	tnow := time.Now()
+	fmt.Printf("time now: %v\n", tnow)
+	dzt := time.Unix(time.Now().Unix()-2*86400, 0)
+	fmt.Printf("time dzt: %v\n", dzt)
+
+	tdt := dzt.Sub(tnow)
+	fmt.Printf("time tdt: %v\n", tdt)
+	today := time.Date(tnow.Year(), tnow.Month(), tnow.Day(), 0, 0, 0, 0, tnow.Location())
+	dzd := time.Date(dzt.Year(), dzt.Month(), dzt.Day(), 0, 0, 0, 0, dzt.Location())
+	tdd := today.Sub(dzd)
+	fmt.Printf("time tdd: %v\n", tdd)
+	tddays := int(tdd / time.Hour / 24)
+	fmt.Printf("time tddays: %v\n", tddays)
+
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://10.7.125.140:27017"))
 	if err != nil {
 		log.Fatal(err)
