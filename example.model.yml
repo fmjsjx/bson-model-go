@@ -41,7 +41,6 @@ objects:
     type: datetime
     json-ignore: true
 - name: Wallet
-  file: wallet.go
   type: object
   fields:
   - name: coinTotal
@@ -60,7 +59,6 @@ objects:
     bname: d
     type: int
 - name: Equipment
-  file: equipment.go
   type: map-value
   key: string
   fields:
@@ -76,6 +74,7 @@ objects:
   - name: hp
     type: int
 - name: CashInfo
+  file: cash.go
   type: object
   fields:
   - name: stages
@@ -87,3 +86,7 @@ objects:
     bname: cs
     type: simple-list
     value: int
+  - name: orderIds
+    bname: ois
+    type: simple-list
+    value: string

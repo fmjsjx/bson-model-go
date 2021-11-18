@@ -14,11 +14,14 @@ type CashInfo interface {
 	Stages() bsonmodel.IntSimpleMapModel
 	Cards() []int
 	SetCards(cards []int)
+	OrderIds() []string
+	SetOrderIds(orderIds []string)
 }
 
 const (
-	BnameCashInfoStages = "stg"
-	BnameCashInfoCards  = "cs"
+	BnameCashInfoStages   = "stg"
+	BnameCashInfoCards    = "cs"
+	BnameCashInfoOrderIds = "ois"
 )
 
 var xpathCashInfo bsonmodel.DotNotation = bsonmodel.PathOfNames("cs")
@@ -28,6 +31,7 @@ type defaultCashInfo struct {
 	parent        Player
 	stages        bsonmodel.IntSimpleMapModel
 	cards         []int
+	orderIds      []string
 }
 
 func (self *defaultCashInfo) ToBson() interface{} {
@@ -39,6 +43,9 @@ func (self *defaultCashInfo) ToData() interface{} {
 	data["stg"] = self.stages.ToData()
 	if self.cards != nil {
 		data["cs"] = self.cards
+	}
+	if self.orderIds != nil {
+		data["ois"] = self.orderIds
 	}
 	return data
 }
@@ -61,6 +68,11 @@ func (self *defaultCashInfo) LoadJsoniter(any jsoniter.Any) error {
 		return err
 	}
 	self.cards = cards
+	orderIds, err := bsonmodel.AnyStringArrayValue(any.Get("ois"))
+	if err != nil {
+		return err
+	}
+	self.orderIds = orderIds
 	return nil
 }
 
@@ -106,6 +118,17 @@ func (self *defaultCashInfo) AppendUpdates(updates bson.M) bson.M {
 				dset[xpath.Resolve("cs").Value()] = cardsArray
 			}
 		}
+		if updatedFields.Test(3) {
+			if self.orderIds == nil {
+				bsonmodel.FixedEmbedded(updates, "$unset")[xpath.Resolve("ois").Value()] = ""
+			} else {
+				orderIdsArray := bson.A{}
+				for _, v := range self.orderIds {
+					orderIdsArray = append(orderIdsArray, v)
+				}
+				dset[xpath.Resolve("ois").Value()] = orderIdsArray
+			}
+		}
 	}
 	return updates
 }
@@ -115,9 +138,17 @@ func (self *defaultCashInfo) ToDocument() bson.M {
 	doc["stg"] = self.stages.ToBson()
 	if self.cards != nil {
 		cardsArray := bson.A{}
-		for _, v := range cardsArray {
+		for _, v := range self.cards {
 			cardsArray = append(cardsArray, v)
 		}
+		doc["cs"] = cardsArray
+	}
+	if self.orderIds != nil {
+		orderIdsArray := bson.A{}
+		for _, v := range self.orderIds {
+			orderIdsArray = append(orderIdsArray, v)
+		}
+		doc["ois"] = orderIdsArray
 	}
 	return doc
 }
@@ -140,6 +171,11 @@ func (self *defaultCashInfo) LoadDocument(document bson.M) error {
 		return err
 	}
 	self.cards = cards
+	orderIds, err := bsonmodel.StringArrayValue(document, "ois")
+	if err != nil {
+		return err
+	}
+	self.orderIds = orderIds
 	return nil
 }
 
@@ -149,6 +185,9 @@ func (self *defaultCashInfo) DeletedSize() int {
 		n += 1
 	}
 	if self.updatedFields.Test(2) && self.cards == nil {
+		n += 1
+	}
+	if self.updatedFields.Test(3) && self.orderIds == nil {
 		n += 1
 	}
 	return n
@@ -180,6 +219,11 @@ func (self *defaultCashInfo) ToSync() interface{} {
 			sync["cards"] = self.cards
 		}
 	}
+	if updatedFields.Test(3) {
+		if self.orderIds != nil {
+			sync["orderIds"] = self.orderIds
+		}
+	}
 	return sync
 }
 
@@ -190,6 +234,9 @@ func (self *defaultCashInfo) ToDelete() interface{} {
 	}
 	if self.updatedFields.Test(2) {
 		delete["cards"] = 1
+	}
+	if self.updatedFields.Test(3) {
+		delete["orderIds"] = 1
 	}
 	return delete
 }
@@ -219,6 +266,15 @@ func (self *defaultCashInfo) SetCards(cards []int) {
 	self.updatedFields.Set(2)
 }
 
+func (self *defaultCashInfo) OrderIds() []string {
+	return self.orderIds
+}
+
+func (self *defaultCashInfo) SetOrderIds(orderIds []string) {
+	self.orderIds = orderIds
+	self.updatedFields.Set(3)
+}
+
 func NewCashInfo(parent Player) CashInfo {
 	self := &defaultCashInfo{updatedFields: &bitset.BitSet{}, parent: parent}
 	self.stages = bsonmodel.NewIntSimpleMapModel(self, "stg", bsonmodel.IntValueType())
@@ -239,10 +295,12 @@ func (codec *cashInfoEncoder) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream
 	stream.WriteMore()
 	stream.WriteObjectField("cards")
 	stream.WriteVal(p.cards)
+	stream.WriteMore()
+	stream.WriteObjectField("orderIds")
+	stream.WriteVal(p.orderIds)
 	stream.WriteObjectEnd()
 }
 
 func init() {
 	jsoniter.RegisterTypeEncoder("example.defaultCashInfo", &cashInfoEncoder{})
 }
-

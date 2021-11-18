@@ -580,9 +580,10 @@ def fill_to_document(code, cfg)
       when 'simple-list'
         code << tabs(1, "if self.#{name} != nil {")
         code << tabs(2, "#{name}Array := bson.A{}")
-        code << tabs(2, "for _, v := range #{name}Array {")
+        code << tabs(2, "for _, v := range self.#{name} {")
         code << tabs(3, "#{name}Array = append(#{name}Array, v)")
         code << tabs(2, "}")
+        code << tabs(2, "doc[\"#{bname}\"] = #{name}Array")
         code << tabs(1, "}")
       else
         code << tabs(1, "doc[\"#{bname}\"] = self.#{name}")
