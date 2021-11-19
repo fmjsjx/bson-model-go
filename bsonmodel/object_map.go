@@ -260,30 +260,26 @@ func (imap *intObjectMap) LoadDocument(document bson.M) error {
 }
 
 func (imap *intObjectMap) ToSync() interface{} {
-	sync := make(map[string]interface{})
+	sync := make(map[int]interface{})
 	data := imap.data
 	updatedKeys := imap.updatedKeys
 	if updatedKeys.Cardinality() > 0 {
 		for _, uk := range updatedKeys.ToSlice() {
 			key := uk.(int)
 			value := data[key]
-			if value.FullyUpdate() {
-				sync[strconv.Itoa(key)] = value.ToBson()
-			} else {
-				sync[strconv.Itoa(key)] = value.ToSync()
-			}
+			sync[key] = value.ToSync()
 		}
 	}
 	return sync
 }
 
 func (imap *intObjectMap) ToDelete() interface{} {
-	delete := make(map[string]int)
+	delete := make(map[int]int)
 	removedKeys := imap.removedKeys
 	if removedKeys.Cardinality() > 0 {
 		for _, uk := range removedKeys.ToSlice() {
 			key := uk.(int)
-			delete[strconv.Itoa(key)] = 1
+			delete[key] = 1
 		}
 	}
 	return delete
@@ -558,11 +554,7 @@ func (smap *stringObjectMap) ToSync() interface{} {
 		for _, uk := range updatedKeys.ToSlice() {
 			key := uk.(string)
 			value := data[key]
-			if value.FullyUpdate() {
-				sync[key] = value.ToBson()
-			} else {
-				sync[key] = value.ToSync()
-			}
+			sync[key] = value.ToSync()
 		}
 	}
 	return sync

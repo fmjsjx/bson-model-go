@@ -769,7 +769,7 @@ def fill_to_sync(code, cfg, is_root = false)
           lines << tabs(2, "sync[\"#{name}\"] = bsonmodel.DateToNumber(self.#{name})")
         end
       when 'simple-list'
-        lines << tabs(2, "if self.#{name} != nil {")
+        lines << tabs(2, "if self.updatedFields.Test(#{index + 1}) && self.#{name} != nil {")
         lines << tabs(3, "sync[\"#{name}\"] = self.#{name}")
         lines << tabs(2, "}")
       else
@@ -801,7 +801,7 @@ def fill_to_delete(code, cfg)
       code << tabs(2, "delete[\"#{name}\"] = self.#{name}.ToDelete()")
       code << tabs(1, "}")
     elsif 'simple-list' == field['type']
-      code << tabs(1, "if self.updatedFields.Test(#{index + 1}) {")
+      code << tabs(1, "if self.updatedFields.Test(#{index + 1}) && self.#{name} == nil {")
       code << tabs(2, "delete[\"#{name}\"] = 1")
       code << tabs(1, "}")
     end

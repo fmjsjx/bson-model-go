@@ -215,12 +215,12 @@ func (self *defaultCashInfo) ToSync() interface{} {
 		sync["stages"] = self.stages.ToSync()
 	}
 	if updatedFields.Test(2) {
-		if self.cards != nil {
+		if self.updatedFields.Test(2) && self.cards != nil {
 			sync["cards"] = self.cards
 		}
 	}
 	if updatedFields.Test(3) {
-		if self.orderIds != nil {
+		if self.updatedFields.Test(3) && self.orderIds != nil {
 			sync["orderIds"] = self.orderIds
 		}
 	}
@@ -232,10 +232,10 @@ func (self *defaultCashInfo) ToDelete() interface{} {
 	if self.stages.AnyDeleted() {
 		delete["stages"] = self.stages.ToDelete()
 	}
-	if self.updatedFields.Test(2) {
+	if self.updatedFields.Test(2) && self.cards == nil {
 		delete["cards"] = 1
 	}
-	if self.updatedFields.Test(3) {
+	if self.updatedFields.Test(3) && self.orderIds == nil {
 		delete["orderIds"] = 1
 	}
 	return delete

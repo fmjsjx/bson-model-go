@@ -322,3 +322,4 @@ func (codec *equipmentEncoder) Encode(ptr unsafe.Pointer, stream *jsoniter.Strea
 func init() {
 	jsoniter.RegisterTypeEncoder("example.defaultEquipment", &equipmentEncoder{})
 }
+

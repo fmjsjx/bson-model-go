@@ -838,3 +838,249 @@ func TestToUpdate(t *testing.T) {
 		t.Errorf("The value expected <%v> but was <%v>", "", unset["cs.cs"])
 	}
 }
+
+func TestToSync(t *testing.T) {
+	createTime := time.Now().Add(-1 * time.Hour).Truncate(time.Millisecond)
+	player := NewPlayer()
+	player.SetUid(123)
+	player.Wallet().SetCoinTotal(5000)
+	player.Wallet().SetCoinUsed(2000)
+	player.Wallet().SetDiamond(10)
+	equipment0 := NewEquipment()
+	equipment0.SetId("12345678-1234-5678-9abc-123456789abc")
+	equipment0.SetRefId(1001)
+	equipment0.SetAtk(12)
+	player.Equipments().Put(equipment0.Id(), equipment0)
+	equipment1 := NewEquipment()
+	equipment1.SetId("11111111-1111-1111-1111-111111111111")
+	equipment1.SetRefId(1101)
+	equipment1.SetDef(6)
+	equipment1.SetHp(12)
+	player.Equipments().Put(equipment1.Id(), equipment1)
+	player.Items().Put(2001, 10)
+	player.Items().Put(2002, 1)
+	player.Cash().Stages().Put(1, 2)
+	player.Cash().Stages().Put(2, 1)
+	player.Cash().SetCards([]int{1, 2})
+	player.Cash().SetOrderIds([]string{"order-0", "order-1"})
+	player.SetUpdateVersion(1)
+	player.SetCreateTime(createTime)
+	player.SetUpdateTime(createTime)
+	player.Reset()
+
+	player.Wallet().SetCoinTotal(5200)
+	player.Wallet().SetCoinUsed(2100)
+	player.Wallet().SetDiamond(11)
+	player.Equipments().Remove("12345678-1234-5678-9abc-123456789abc")
+	player.Equipment("11111111-1111-1111-1111-111111111111").SetHp(20)
+	equipment2 := NewEquipment()
+	equipment2.SetId("22222222-2222-2222-2222-222222222222")
+	equipment2.SetRefId(1201)
+	equipment2.SetAtk(2)
+	equipment2.SetDef(2)
+	equipment2.SetHp(2)
+	player.Equipments().Put(equipment2.Id(), equipment2)
+	player.Items().Put(2001, 12)
+	player.Items().Put(2002, 0)
+	player.Items().Put(2003, 1)
+	player.Cash().Stages().Remove(1)
+	player.Cash().Stages().Put(3, 1)
+	player.Cash().SetCards(nil)
+	player.Cash().SetOrderIds([]string{"order-0", "order-1", "order-2"})
+	player.IncreaseUpdateVersion()
+	now := time.Now().Truncate(time.Millisecond)
+	player.SetUpdateTime(now)
+
+	sync := player.ToSync().(map[string]interface{})
+	if 4 != len(sync) {
+		t.Errorf("The value expected <%v> but was <%v>", 4, len(sync))
+	}
+	if sync["wallet"] == nil {
+		t.Error("The value expected not be nil")
+	} else {
+		wallet := sync["wallet"].(map[string]interface{})
+		if 3 != len(wallet) {
+			t.Errorf("The value expected <%v> but was <%v>", 3, len(wallet))
+		}
+		if 5200 != wallet["coinTotal"] {
+			t.Errorf("The value expected <%v> but was <%v>", 5200, wallet["coinTotal"])
+		}
+		if 3100 != wallet["coin"] {
+			t.Errorf("The value expected <%v> but was <%v>", 3100, wallet["coin"])
+		}
+		if 11 != wallet["diamond"] {
+			t.Errorf("The value expected <%v> but was <%v>", 11, wallet["diamond"])
+		}
+	}
+	if sync["equipments"] == nil {
+		t.Error("The value expected not be nil")
+	} else {
+		equipments := sync["equipments"].(map[string]interface{})
+		if 2 != len(equipments) {
+			t.Errorf("The value expected <%v> but was <%v>", 2, len(equipments))
+		}
+		if equipments["11111111-1111-1111-1111-111111111111"] == nil {
+			t.Error("The value expected not be nil")
+		} else {
+			eq1 := equipments["11111111-1111-1111-1111-111111111111"].(map[string]interface{})
+			if 1 != len(eq1) {
+				t.Errorf("The value expected <%v> but was <%v>", 1, len(eq1))
+			}
+			if 20 != eq1["hp"] {
+				t.Errorf("The value expected <%v> but was <%v>", 20, eq1["hp"])
+			}
+		}
+		if equipments["22222222-2222-2222-2222-222222222222"] == nil {
+			t.Error("The value expected not be nil")
+		} else {
+			eq2 := equipments["22222222-2222-2222-2222-222222222222"].(Equipment)
+			if equipment2 != eq2 {
+				t.Errorf("The value expected <%v> but was <%v>", equipment2, eq2)
+			}
+		}
+	}
+	if sync["items"] == nil {
+		t.Error("The value expected not be nil")
+	} else {
+		items := sync["items"].(map[int]interface{})
+		if 3 != len(items) {
+			t.Errorf("The value expected <%v> but was <%v>", 3, len(items))
+		}
+		if 12 != items[2001] {
+			t.Errorf("The value expected <%v> but was <%v>", 12, items[2001])
+		}
+		if 0 != items[2002] {
+			t.Errorf("The value expected <%v> but was <%v>", 0, items[2002])
+		}
+		if 1 != items[2003] {
+			t.Errorf("The value expected <%v> but was <%v>", 1, items[2003])
+		}
+	}
+	if sync["cash"] == nil {
+		t.Error("The value expected not be nil")
+	} else {
+		cash := sync["cash"].(map[string]interface{})
+		if 2 != len(cash) {
+			t.Errorf("The value expected <%v> but was <%v>", 2, len(cash))
+		}
+		if cash["stages"] == nil {
+			t.Error("The value expected not be nil")
+		} else {
+			stages := cash["stages"].(map[int]interface{})
+			if 1 != len(stages) {
+				t.Errorf("The value expected <%v> but was <%v>", 1, len(stages))
+			}
+			if 1 != stages[3] {
+				t.Errorf("The value expected <%v> but was <%v>", 1, stages[3])
+			}
+		}
+		if cash["orderIds"] == nil {
+			t.Error("The value expected not be nil")
+		} else {
+			orderIds := cash["orderIds"].([]string)
+			if 3 != len(orderIds) {
+				t.Errorf("The value expected <%v> but was <%v>", 3, len(orderIds))
+			}
+			if "order-0" != orderIds[0] {
+				t.Errorf("The value expected <%v> but was <%v>", "order-0", orderIds[0])
+			}
+			if "order-1" != orderIds[1] {
+				t.Errorf("The value expected <%v> but was <%v>", "order-1", orderIds[1])
+			}
+			if "order-2" != orderIds[2] {
+				t.Errorf("The value expected <%v> but was <%v>", "order-2", orderIds[2])
+			}
+		}
+	}
+}
+
+func TestToDelete(t *testing.T) {
+	createTime := time.Now().Add(-1 * time.Hour).Truncate(time.Millisecond)
+	player := NewPlayer()
+	player.SetUid(123)
+	player.Wallet().SetCoinTotal(5000)
+	player.Wallet().SetCoinUsed(2000)
+	player.Wallet().SetDiamond(10)
+	equipment0 := NewEquipment()
+	equipment0.SetId("12345678-1234-5678-9abc-123456789abc")
+	equipment0.SetRefId(1001)
+	equipment0.SetAtk(12)
+	player.Equipments().Put(equipment0.Id(), equipment0)
+	equipment1 := NewEquipment()
+	equipment1.SetId("11111111-1111-1111-1111-111111111111")
+	equipment1.SetRefId(1101)
+	equipment1.SetDef(6)
+	equipment1.SetHp(12)
+	player.Equipments().Put(equipment1.Id(), equipment1)
+	player.Items().Put(2001, 10)
+	player.Items().Put(2002, 1)
+	player.Cash().Stages().Put(1, 2)
+	player.Cash().Stages().Put(2, 1)
+	player.Cash().SetCards([]int{1, 2})
+	player.Cash().SetOrderIds([]string{"order-0", "order-1"})
+	player.SetUpdateVersion(1)
+	player.SetCreateTime(createTime)
+	player.SetUpdateTime(createTime)
+	player.Reset()
+
+	player.Wallet().SetCoinTotal(5200)
+	player.Wallet().SetCoinUsed(2100)
+	player.Wallet().SetDiamond(11)
+	player.Equipments().Remove("12345678-1234-5678-9abc-123456789abc")
+	player.Equipment("11111111-1111-1111-1111-111111111111").SetHp(20)
+	equipment2 := NewEquipment()
+	equipment2.SetId("22222222-2222-2222-2222-222222222222")
+	equipment2.SetRefId(1201)
+	equipment2.SetAtk(2)
+	equipment2.SetDef(2)
+	equipment2.SetHp(2)
+	player.Equipments().Put(equipment2.Id(), equipment2)
+	player.Items().Put(2001, 12)
+	player.Items().Put(2002, 0)
+	player.Items().Put(2003, 1)
+	player.Cash().Stages().Remove(1)
+	player.Cash().Stages().Put(3, 1)
+	player.Cash().SetCards(nil)
+	player.Cash().SetOrderIds([]string{"order-0", "order-1", "order-2"})
+	player.IncreaseUpdateVersion()
+	now := time.Now().Truncate(time.Millisecond)
+	player.SetUpdateTime(now)
+
+	delete := player.ToDelete().(map[string]interface{})
+	if 2 != len(delete) {
+		t.Errorf("The value expected <%v> but was <%v>", 2, len(delete))
+	}
+	if delete["equipments"] == nil {
+		t.Error("The value expected not be nil")
+	} else {
+		equipments := delete["equipments"].(map[string]int)
+		if 1 != len(equipments) {
+			t.Errorf("The value expected <%v> but was <%v>", 1, len(equipments))
+		}
+		if 1 != equipments["12345678-1234-5678-9abc-123456789abc"] {
+			t.Errorf("The value expected <%v> but was <%v>", 1, equipments["12345678-1234-5678-9abc-123456789abc"])
+		}
+	}
+	if delete["cash"] == nil {
+		t.Error("The value expected not be nil")
+	} else {
+		cash := delete["cash"].(map[string]interface{})
+		if 2 != len(cash) {
+			t.Errorf("The value expected <%v> but was <%v>", 2, len(cash))
+		}
+		if cash["stages"] == nil {
+			t.Error("The value expected not be nil")
+		} else {
+			stages := cash["stages"].(map[int]int)
+			if 1 != len(stages) {
+				t.Errorf("The value expected <%v> but was <%v>", 1, len(stages))
+			}
+			if 1 != stages[1] {
+				t.Errorf("The value expected <%v> but was <%v>", 1, stages[1])
+			}
+		}
+		if 1 != cash["cards"] {
+			t.Errorf("The value expected <%v> but was <%v>", 1, cash["cards"])
+		}
+	}
+}

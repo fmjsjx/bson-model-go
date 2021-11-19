@@ -430,7 +430,7 @@ func (imap *intSimpleMap) LoadDocument(document bson.M) error {
 }
 
 func (imap *intSimpleMap) ToSync() interface{} {
-	sync := make(map[string]interface{})
+	sync := make(map[int]interface{})
 	updatedKeys := imap.updatedKeys
 	data := imap.data
 	if updatedKeys.Cardinality() > 0 {
@@ -438,19 +438,19 @@ func (imap *intSimpleMap) ToSync() interface{} {
 		for _, uk := range updatedKeys.ToSlice() {
 			key := uk.(int)
 			value := data[key]
-			sync[strconv.Itoa(key)] = valueType.ToData(value)
+			sync[key] = valueType.ToData(value)
 		}
 	}
 	return sync
 }
 
 func (imap *intSimpleMap) ToDelete() interface{} {
-	delete := make(map[string]int)
+	delete := make(map[int]int)
 	removedKeys := imap.removedKeys
 	if removedKeys.Cardinality() > 0 {
 		for _, uk := range removedKeys.ToSlice() {
 			key := uk.(int)
-			delete[strconv.Itoa(key)] = 1
+			delete[key] = 1
 		}
 	}
 	return delete
