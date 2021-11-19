@@ -992,6 +992,13 @@ func TestToSync(t *testing.T) {
 			}
 		}
 	}
+
+	player.Reset()
+
+	sync = player.ToSync().(map[string]interface{})
+	if 0 != len(sync) {
+		t.Errorf("The value expected <%v> but was <%v>", 0, len(sync))
+	}
 }
 
 func TestToDelete(t *testing.T) {
@@ -1081,6 +1088,191 @@ func TestToDelete(t *testing.T) {
 		}
 		if 1 != cash["cards"] {
 			t.Errorf("The value expected <%v> but was <%v>", 1, cash["cards"])
+		}
+	}
+
+	player.Reset()
+
+	delete = player.ToDelete().(map[string]interface{})
+	if 0 != len(delete) {
+		t.Errorf("The value expected <%v> but was <%v>", 0, len(delete))
+	}
+}
+
+func TestMarshalToJsonString(t *testing.T) {
+	createTime := time.Now().Add(-1 * time.Hour).Truncate(time.Millisecond)
+	player := NewPlayer()
+	player.SetUid(123)
+	player.Wallet().SetCoinTotal(5000)
+	player.Wallet().SetCoinUsed(2000)
+	player.Wallet().SetDiamond(10)
+	equipment0 := NewEquipment()
+	equipment0.SetId("12345678-1234-5678-9abc-123456789abc")
+	equipment0.SetRefId(1001)
+	equipment0.SetAtk(12)
+	player.Equipments().Put(equipment0.Id(), equipment0)
+	equipment1 := NewEquipment()
+	equipment1.SetId("11111111-1111-1111-1111-111111111111")
+	equipment1.SetRefId(1101)
+	equipment1.SetDef(6)
+	equipment1.SetHp(12)
+	player.Equipments().Put(equipment1.Id(), equipment1)
+	player.Items().Put(2001, 10)
+	player.Items().Put(2002, 1)
+	player.Cash().Stages().Put(1, 2)
+	player.Cash().Stages().Put(2, 1)
+	player.Cash().SetCards([]int{1, 2})
+	player.Cash().SetOrderIds([]string{"order-0", "order-1"})
+	player.SetUpdateVersion(1)
+	player.SetCreateTime(createTime)
+	player.SetUpdateTime(createTime)
+	player.Reset()
+
+	json, err := player.MarshalToJsonString()
+	if err != nil {
+		t.Errorf("Unexpected error occurs: %e", err)
+	}
+
+	any := jsoniter.Get([]byte(json))
+	if 5 != any.Size() {
+		t.Errorf("The value expected <%v> but was <%v>", 5, any.Size())
+	}
+	if 123 != any.Get("uid").ToInt() {
+		t.Errorf("The value expected <%v> but was <%v>", 123, any.Get("uid").ToInt())
+	}
+	wallet := any.Get("wallet")
+	if jsoniter.ObjectValue != wallet.ValueType() {
+		t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, wallet.ValueType())
+	} else {
+		if 3 != wallet.Size() {
+			t.Errorf("The value expected <%v> but was <%v>", 3, wallet.Size())
+		}
+		if 5000 != wallet.Get("coinTotal").ToInt() {
+			t.Errorf("The value expected <%v> but was <%v>", 5000, wallet.Get("coinTotal").ToInt())
+		}
+		if 3000 != wallet.Get("coin").ToInt() {
+			t.Errorf("The value expected <%v> but was <%v>", 3000, wallet.Get("coin").ToInt())
+		}
+		if 10 != wallet.Get("diamond").ToInt() {
+			t.Errorf("The value expected <%v> but was <%v>", 10, wallet.Get("diamond").ToInt())
+		}
+	}
+	equipments := any.Get("equipments")
+	if jsoniter.ObjectValue != equipments.ValueType() {
+		t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, equipments.ValueType())
+	} else {
+		if 2 != equipments.Size() {
+			t.Errorf("The value expected <%v> but was <%v>", 2, equipments.Size())
+		}
+		eq0 := equipments.Get("12345678-1234-5678-9abc-123456789abc")
+		if jsoniter.ObjectValue != eq0.ValueType() {
+			t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, eq0.ValueType())
+		} else {
+			if 5 != eq0.Size() {
+				t.Errorf("The value expected <%v> but was <%v>", 5, eq0.Size())
+			}
+			if "12345678-1234-5678-9abc-123456789abc" != eq0.Get("id").ToString() {
+				t.Errorf("The value expected <%v> but was <%v>", "12345678-1234-5678-9abc-123456789abc", eq0.Get("id").ToString())
+			}
+			if 1001 != eq0.Get("refId").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 1001, eq0.Get("refId").ToInt())
+			}
+			if 12 != eq0.Get("atk").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 12, eq0.Get("atk").ToInt())
+			}
+			if 0 != eq0.Get("def").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq0.Get("def").ToInt())
+			}
+			if 0 != eq0.Get("hp").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq0.Get("hp").ToInt())
+			}
+		}
+		eq1 := equipments.Get("11111111-1111-1111-1111-111111111111")
+		if jsoniter.ObjectValue != eq1.ValueType() {
+			t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, eq1.ValueType())
+		} else {
+			if 5 != eq1.Size() {
+				t.Errorf("The value expected <%v> but was <%v>", 5, eq1.Size())
+			}
+			if "11111111-1111-1111-1111-111111111111" != eq1.Get("id").ToString() {
+				t.Errorf("The value expected <%v> but was <%v>", "11111111-1111-1111-1111-111111111111", eq1.Get("id").ToString())
+			}
+			if 1101 != eq1.Get("refId").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 1101, eq1.Get("refId").ToInt())
+			}
+			if 0 != eq1.Get("atk").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq1.Get("atk").ToInt())
+			}
+			if 6 != eq1.Get("def").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 6, eq1.Get("def").ToInt())
+			}
+			if 12 != eq1.Get("hp").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 12, eq1.Get("hp").ToInt())
+			}
+		}
+	}
+	items := any.Get("items")
+	if jsoniter.ObjectValue != items.ValueType() {
+		t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, items.ValueType())
+	} else {
+		if 2 != items.Size() {
+			t.Errorf("The value expected <%v> but was <%v>", 2, items.Size())
+		}
+		if 10 != items.Get("2001").ToInt() {
+			t.Errorf("The value expected <%v> but was <%v>", 10, items.Get("2001").ToInt())
+		}
+		if 1 != items.Get("2002").ToInt() {
+			t.Errorf("The value expected <%v> but was <%v>", 1, items.Get("2002").ToInt())
+		}
+	}
+	cash := any.Get("cash")
+	if jsoniter.ObjectValue != cash.ValueType() {
+		t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, cash.ValueType())
+	} else {
+		if 3 != cash.Size() {
+			t.Errorf("The value expected <%v> but was <%v>", 3, cash.Size())
+		}
+		stages := cash.Get("stages")
+		if jsoniter.ObjectValue != stages.ValueType() {
+			t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, stages.ValueType())
+		} else {
+			if 2 != stages.Size() {
+				t.Errorf("The value expected <%v> but was <%v>", 3, stages.Size())
+			}
+			if 2 != stages.Get("1").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 2, stages.Get("1").ToInt())
+			}
+			if 1 != stages.Get("2").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 1, stages.Get("2").ToInt())
+			}
+		}
+		cards := cash.Get("cards")
+		if jsoniter.ArrayValue != cards.ValueType() {
+			t.Errorf("The value expected <%v> but was <%v>", jsoniter.ArrayValue, cards.ValueType())
+		} else {
+			if 2 != cards.Size() {
+				t.Errorf("The value expected <%v> but was <%v>", 2, cards.Size())
+			}
+			if 1 != cards.Get(0).ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 1, cards.Get(0).ToInt())
+			}
+			if 2 != cards.Get(1).ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 2, cards.Get(1).ToInt())
+			}
+		}
+		orderIds := cash.Get("orderIds")
+		if jsoniter.ArrayValue != orderIds.ValueType() {
+			t.Errorf("The value expected <%v> but was <%v>", jsoniter.ArrayValue, orderIds.ValueType())
+		} else {
+			if 2 != orderIds.Size() {
+				t.Errorf("The value expected <%v> but was <%v>", 2, orderIds.Size())
+			}
+			if "order-0" != orderIds.Get(0).ToString() {
+				t.Errorf("The value expected <%v> but was <%v>", "order-0", orderIds.Get(0).ToString())
+			}
+			if "order-1" != orderIds.Get(1).ToString() {
+				t.Errorf("The value expected <%v> but was <%v>", "order-1", orderIds.Get(1).ToString())
+			}
 		}
 	}
 }
