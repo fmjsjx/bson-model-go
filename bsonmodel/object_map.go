@@ -45,6 +45,12 @@ func (v *BaseIntObjectMapValue) Key() int {
 	return v.key
 }
 
+func (v *BaseIntObjectMapValue) EmitUpdated() {
+	if v.parent != nil {
+		v.parent.(mapModel).emitUpdated(v.key)
+	}
+}
+
 type IntObjectMapModel interface {
 	mapModel
 	Keys() []int
@@ -189,10 +195,7 @@ func (imap *intObjectMap) AppendUpdates(updates bson.M) bson.M {
 	data := imap.data
 	updatedKeys := imap.updatedKeys
 	if updatedKeys.Cardinality() > 0 {
-		dset, ok := updates["$set"].(bson.M)
-		if !ok {
-			dset = bson.M{}
-		}
+		dset := FixedEmbedded(updates, "$set")
 		for _, uk := range updatedKeys.ToSlice() {
 			key := uk.(int)
 			value := data[key]
@@ -205,15 +208,12 @@ func (imap *intObjectMap) AppendUpdates(updates bson.M) bson.M {
 	}
 	removedKeys := imap.removedKeys
 	if removedKeys.Cardinality() > 0 {
-		unset, ok := updates["$unset"].(bson.M)
-		if !ok {
-			unset = bson.M{}
-		}
+		unset := FixedEmbedded(updates, "$unset")
 		for _, uk := range removedKeys.ToSlice() {
 			key := uk.(int)
 			k := strconv.Itoa(key)
 			name := imap.XPath().Resolve(k)
-			unset[name.Value()] = 1
+			unset[name.Value()] = ""
 		}
 	}
 	return updates
@@ -346,6 +346,12 @@ func (v *BaseStringObjectMapValue) setKey(key string) {
 
 func (v *BaseStringObjectMapValue) Key() string {
 	return v.key
+}
+
+func (v *BaseStringObjectMapValue) EmitUpdated() {
+	if v.parent != nil {
+		v.parent.(mapModel).emitUpdated(v.key)
+	}
 }
 
 type StringObjectMapModel interface {
@@ -487,10 +493,7 @@ func (smap *stringObjectMap) AppendUpdates(updates bson.M) bson.M {
 	data := smap.data
 	updatedKeys := smap.updatedKeys
 	if updatedKeys.Cardinality() > 0 {
-		dset, ok := updates["$set"].(bson.M)
-		if !ok {
-			dset = bson.M{}
-		}
+		dset := FixedEmbedded(updates, "$set")
 		for _, uk := range updatedKeys.ToSlice() {
 			key := uk.(string)
 			value := data[key]
@@ -503,14 +506,11 @@ func (smap *stringObjectMap) AppendUpdates(updates bson.M) bson.M {
 	}
 	removedKeys := smap.removedKeys
 	if removedKeys.Cardinality() > 0 {
-		unset, ok := updates["$unset"].(bson.M)
-		if !ok {
-			unset = bson.M{}
-		}
+		unset := FixedEmbedded(updates, "$unset")
 		for _, uk := range removedKeys.ToSlice() {
 			key := uk.(string)
 			name := smap.XPath().Resolve(key)
-			unset[name.Value()] = 1
+			unset[name.Value()] = ""
 		}
 	}
 	return updates

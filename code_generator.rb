@@ -848,6 +848,9 @@ def fill_xetters(code, cfg)
             code << tabs(2, "self.updatedFields.Set(#{relation_index})")
           end
         end
+        if cfg['type'] == 'map-value'
+          code << tabs(2, "self.EmitUpdated()")
+        end
         code << tabs(1, "}")
         code << "}\n\n"
         if field['increase'] == true

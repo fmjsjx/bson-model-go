@@ -380,136 +380,461 @@ func TestToDocument(t *testing.T) {
 	if primitive.NewDateTimeFromTime(now) != doc[BnamePlayerUpdateTime] {
 		t.Errorf("The value expected <%v> but was <%v>", primitive.NewDateTimeFromTime(now), doc[BnamePlayerUpdateTime])
 	}
-	wlt := doc[BnamePlayerWallet]
-	if wlt == nil {
+	if doc[BnamePlayerWallet] == nil {
 		t.Error("The value expected not be nil")
 	} else {
-		if 5000 != wlt.(bson.M)[BnameWalletCoinTotal] {
-			t.Errorf("The value expected <%v> but was <%v>", 5000, wlt.(bson.M)[BnameWalletCoinTotal])
+		wlt := doc[BnamePlayerWallet].(bson.M)
+		if 5000 != wlt[BnameWalletCoinTotal] {
+			t.Errorf("The value expected <%v> but was <%v>", 5000, wlt[BnameWalletCoinTotal])
 		}
-		if 2000 != wlt.(bson.M)[BnameWalletCoinUsed] {
-			t.Errorf("The value expected <%v> but was <%v>", 2000, wlt.(bson.M)[BnameWalletCoinUsed])
+		if 2000 != wlt[BnameWalletCoinUsed] {
+			t.Errorf("The value expected <%v> but was <%v>", 2000, wlt[BnameWalletCoinUsed])
 		}
-		if 10 != wlt.(bson.M)[BnameWalletDiamond] {
-			t.Errorf("The value expected <%v> but was <%v>", 10, wlt.(bson.M)[BnameWalletDiamond])
+		if 10 != wlt[BnameWalletDiamond] {
+			t.Errorf("The value expected <%v> but was <%v>", 10, wlt[BnameWalletDiamond])
 		}
 	}
-	eqm := doc[BnamePlayerEquipments]
-	if eqm == nil {
+	if doc[BnamePlayerEquipments] == nil {
 		t.Error("The value expected not be nil")
 	} else {
-		if 2 != len(eqm.(bson.M)) {
-			t.Errorf("The value expected <%v> but was <%v>", 2, len(eqm.(bson.M)))
+		eqm := doc[BnamePlayerEquipments].(bson.M)
+		if 2 != len(eqm) {
+			t.Errorf("The value expected <%v> but was <%v>", 2, len(eqm))
 		}
-		eq0 := eqm.(bson.M)["12345678-1234-5678-9abc-123456789abc"]
-		if eq0 == nil {
+		if eqm["12345678-1234-5678-9abc-123456789abc"] == nil {
 			t.Error("The value expected not be nil")
 		} else {
-			if "12345678-1234-5678-9abc-123456789abc" != eq0.(bson.M)[BnameEquipmentId] {
-				t.Errorf("The value expected <%v> but was <%v>", "12345678-1234-5678-9abc-123456789abc", eq0.(bson.M)[BnameEquipmentId])
+			eq0 := eqm["12345678-1234-5678-9abc-123456789abc"].(bson.M)
+			if "12345678-1234-5678-9abc-123456789abc" != eq0[BnameEquipmentId] {
+				t.Errorf("The value expected <%v> but was <%v>", "12345678-1234-5678-9abc-123456789abc", eq0[BnameEquipmentId])
 			}
-			if 1001 != eq0.(bson.M)[BnameEquipmentRefId] {
-				t.Errorf("The value expected <%v> but was <%v>", 1001, eq0.(bson.M)[BnameEquipmentRefId])
+			if 1001 != eq0[BnameEquipmentRefId] {
+				t.Errorf("The value expected <%v> but was <%v>", 1001, eq0[BnameEquipmentRefId])
 			}
-			if 12 != eq0.(bson.M)[BnameEquipmentAtk] {
-				t.Errorf("The value expected <%v> but was <%v>", 12, eq0.(bson.M)[BnameEquipmentAtk])
+			if 12 != eq0[BnameEquipmentAtk] {
+				t.Errorf("The value expected <%v> but was <%v>", 12, eq0[BnameEquipmentAtk])
 			}
-			if 0 != eq0.(bson.M)[BnameEquipmentDef] {
-				t.Errorf("The value expected <%v> but was <%v>", 0, eq0.(bson.M)[BnameEquipmentDef])
+			if 0 != eq0[BnameEquipmentDef] {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq0[BnameEquipmentDef])
 			}
-			if 0 != eq0.(bson.M)[BnameEquipmentHp] {
-				t.Errorf("The value expected <%v> but was <%v>", 0, eq0.(bson.M)[BnameEquipmentHp])
+			if 0 != eq0[BnameEquipmentHp] {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq0[BnameEquipmentHp])
 			}
 		}
-		eq1 := eqm.(bson.M)["11111111-1111-1111-1111-111111111111"]
-		if eq1 == nil {
+		if eqm["11111111-1111-1111-1111-111111111111"] == nil {
 			t.Error("The value expected not be nil")
 		} else {
-			if "11111111-1111-1111-1111-111111111111" != eq1.(bson.M)[BnameEquipmentId] {
-				t.Errorf("The value expected <%v> but was <%v>", "11111111-1111-1111-1111-111111111111", eq0.(bson.M)[BnameEquipmentId])
+			eq1 := eqm["11111111-1111-1111-1111-111111111111"].(bson.M)
+			if "11111111-1111-1111-1111-111111111111" != eq1[BnameEquipmentId] {
+				t.Errorf("The value expected <%v> but was <%v>", "11111111-1111-1111-1111-111111111111", eq1[BnameEquipmentId])
 			}
-			if 1101 != eq1.(bson.M)[BnameEquipmentRefId] {
-				t.Errorf("The value expected <%v> but was <%v>", 1101, eq1.(bson.M)[BnameEquipmentRefId])
+			if 1101 != eq1[BnameEquipmentRefId] {
+				t.Errorf("The value expected <%v> but was <%v>", 1101, eq1[BnameEquipmentRefId])
 			}
-			if 0 != eq1.(bson.M)[BnameEquipmentAtk] {
-				t.Errorf("The value expected <%v> but was <%v>", 0, eq1.(bson.M)[BnameEquipmentAtk])
+			if 0 != eq1[BnameEquipmentAtk] {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq1[BnameEquipmentAtk])
 			}
-			if 6 != eq1.(bson.M)[BnameEquipmentDef] {
-				t.Errorf("The value expected <%v> but was <%v>", 6, eq1.(bson.M)[BnameEquipmentDef])
+			if 6 != eq1[BnameEquipmentDef] {
+				t.Errorf("The value expected <%v> but was <%v>", 6, eq1[BnameEquipmentDef])
 			}
-			if 12 != eq1.(bson.M)[BnameEquipmentHp] {
-				t.Errorf("The value expected <%v> but was <%v>", 12, eq1.(bson.M)[BnameEquipmentHp])
+			if 12 != eq1[BnameEquipmentHp] {
+				t.Errorf("The value expected <%v> but was <%v>", 12, eq1[BnameEquipmentHp])
 			}
 		}
-		eqn := eqm.(bson.M)["no such equipment"]
+		eqn := eqm["no such equipment"]
 		if eqn != nil {
 			t.Errorf("The value expected nil but was <%v>", eqn)
 		}
 	}
-	itm := doc[BnamePlayerItems]
-	if itm == nil {
+
+	if doc[BnamePlayerItems] == nil {
 		t.Error("The value expected not be nil")
 	} else {
-		if 2 != len(itm.(bson.M)) {
-			t.Errorf("The value expected <%v> but was <%v>", 2, len(itm.(bson.M)))
+		itm := doc[BnamePlayerItems].(bson.M)
+		if 2 != len(itm) {
+			t.Errorf("The value expected <%v> but was <%v>", 2, len(itm))
 		}
-		if 10 != itm.(bson.M)["2001"] {
-			t.Errorf("The value expected <%v> but was <%v>", 10, itm.(bson.M)["2001"])
+		if 10 != itm["2001"] {
+			t.Errorf("The value expected <%v> but was <%v>", 10, itm["2001"])
 		}
-		if 1 != itm.(bson.M)["2002"] {
-			t.Errorf("The value expected <%v> but was <%v>", 1, itm.(bson.M)["2002"])
+		if 1 != itm["2002"] {
+			t.Errorf("The value expected <%v> but was <%v>", 1, itm["2002"])
 		}
 	}
-	cs := doc[BnamePlayerCash]
-	if cs == nil {
+
+	if doc[BnamePlayerCash] == nil {
 		t.Error("The value expected not be nil")
 		return
 	}
-	if 3 != len(cs.(bson.M)) {
-		t.Errorf("The value expected <%v> but was <%v>", 3, len(cs.(bson.M)))
+	cs := doc[BnamePlayerCash].(bson.M)
+	if 3 != len(cs) {
+		t.Errorf("The value expected <%v> but was <%v>", 3, len(cs))
 	}
-	stg := cs.(bson.M)[BnameCashInfoStages]
-	if stg == nil {
+	if cs[BnameCashInfoStages] == nil {
 		t.Error("The value expected not be nil")
 	} else {
-		if 2 != len(stg.(bson.M)) {
-			t.Errorf("The value expected <%v> but was <%v>", 2, len(stg.(bson.M)))
+		stg := cs[BnameCashInfoStages].(bson.M)
+		if 2 != len(stg) {
+			t.Errorf("The value expected <%v> but was <%v>", 2, len(stg))
 		}
-		if 2 != stg.(bson.M)["1"] {
-			t.Errorf("The value expected <%v> but was <%v>", 2, stg.(bson.M)["1"])
+		if 2 != stg["1"] {
+			t.Errorf("The value expected <%v> but was <%v>", 2, stg["1"])
 		}
-		if 1 != stg.(bson.M)["2"] {
-			t.Errorf("The value expected <%v> but was <%v>", 1, stg.(bson.M)["2"])
+		if 1 != stg["2"] {
+			t.Errorf("The value expected <%v> but was <%v>", 1, stg["2"])
 		}
 	}
-	cds := cs.(bson.M)[BnameCashInfoCards]
-	if cds == nil {
+	if cs[BnameCashInfoCards] == nil {
 		t.Error("The value expected not be nil")
 	} else {
-		if 2 != len(cds.(bson.A)) {
-			t.Errorf("The value expected <%v> but was <%v>", 2, len(cds.(bson.A)))
+		cds := cs[BnameCashInfoCards].(bson.A)
+		if 2 != len(cds) {
+			t.Errorf("The value expected <%v> but was <%v>", 2, len(cds))
 		} else {
-			if 1 != cds.(bson.A)[0] {
-				t.Errorf("The value expected <%v> but was <%v>", 1, cds.(bson.A)[0])
+			if 1 != cds[0] {
+				t.Errorf("The value expected <%v> but was <%v>", 1, cds[0])
 			}
-			if 2 != cds.(bson.A)[1] {
-				t.Errorf("The value expected <%v> but was <%v>", 2, cds.(bson.A)[1])
+			if 2 != cds[1] {
+				t.Errorf("The value expected <%v> but was <%v>", 2, cds[1])
 			}
 		}
 	}
-	ois := cs.(bson.M)[BnameCashInfoOrderIds]
-	if ois == nil {
+	if cs[BnameCashInfoOrderIds] == nil {
 		t.Error("The value expected not be nil")
 	} else {
-		if 2 != len(ois.(bson.A)) {
-			t.Errorf("The value expected <%v> but was <%v>", 2, len(ois.(bson.A)))
+		ois := cs[BnameCashInfoOrderIds].(bson.A)
+		if 2 != len(ois) {
+			t.Errorf("The value expected <%v> but was <%v>", 2, len(ois))
 		} else {
-			if "order-0" != ois.(bson.A)[0] {
-				t.Errorf("The value expected <%v> but was <%v>", "order-0", ois.(bson.A)[0])
+			if "order-0" != ois[0] {
+				t.Errorf("The value expected <%v> but was <%v>", "order-0", ois[0])
 			}
-			if "order-1" != ois.(bson.A)[1] {
-				t.Errorf("The value expected <%v> but was <%v>", "order-1", ois.(bson.A)[1])
+			if "order-1" != ois[1] {
+				t.Errorf("The value expected <%v> but was <%v>", "order-1", ois[1])
 			}
 		}
+	}
+}
+
+func TestToData(t *testing.T) {
+	now := time.Now().Truncate(time.Millisecond)
+	player := NewPlayer()
+	player.SetUid(123)
+	player.Wallet().SetCoinTotal(5000)
+	player.Wallet().SetCoinUsed(2000)
+	player.Wallet().SetDiamond(10)
+	equipment0 := NewEquipment()
+	equipment0.SetId("12345678-1234-5678-9abc-123456789abc")
+	equipment0.SetRefId(1001)
+	equipment0.SetAtk(12)
+	player.Equipments().Put(equipment0.Id(), equipment0)
+	equipment1 := NewEquipment()
+	equipment1.SetId("11111111-1111-1111-1111-111111111111")
+	equipment1.SetRefId(1101)
+	equipment1.SetDef(6)
+	equipment1.SetHp(12)
+	player.Equipments().Put(equipment1.Id(), equipment1)
+	player.Items().Put(2001, 10)
+	player.Items().Put(2002, 1)
+	player.Cash().Stages().Put(1, 2)
+	player.Cash().Stages().Put(2, 1)
+	player.Cash().SetCards([]int{1, 2})
+	player.Cash().SetOrderIds([]string{"order-0", "order-1"})
+	player.SetUpdateVersion(1)
+	player.SetCreateTime(now)
+	player.SetUpdateTime(now)
+	player.Reset()
+
+	data := player.ToData().(map[string]interface{})
+	if 8 != len(data) {
+		t.Errorf("The value expected <%v> but was <%v>", 8, len(data))
+	}
+	if 123 != data[BnamePlayerUid] {
+		t.Errorf("The value expected <%v> but was <%v>", 1, data[BnamePlayerUid])
+	}
+	if 1 != data[BnamePlayerUpdateVersion] {
+		t.Errorf("The value expected <%v> but was <%v>", 1, data[BnamePlayerUpdateVersion])
+	}
+	if now.UnixMilli() != data[BnamePlayerCreateTime] {
+		t.Errorf("The value expected <%v> but was <%v>", now.UnixMilli(), data[BnamePlayerCreateTime])
+	}
+	if now.UnixMilli() != data[BnamePlayerUpdateTime] {
+		t.Errorf("The value expected <%v> but was <%v>", now.UnixMilli(), data[BnamePlayerUpdateTime])
+	}
+	if data[BnamePlayerWallet] == nil {
+		t.Error("The value expected not be nil")
+	} else {
+		wlt := data[BnamePlayerWallet].(map[string]interface{})
+		if 3 != len(wlt) {
+			t.Errorf("The value expected <%v> but was <%v>", 3, len(wlt))
+		}
+		if 5000 != wlt[BnameWalletCoinTotal] {
+			t.Errorf("The value expected <%v> but was <%v>", 5000, wlt[BnameWalletCoinTotal])
+		}
+		if 2000 != wlt[BnameWalletCoinUsed] {
+			t.Errorf("The value expected <%v> but was <%v>", 2000, wlt[BnameWalletCoinUsed])
+		}
+		if 10 != wlt[BnameWalletDiamond] {
+			t.Errorf("The value expected <%v> but was <%v>", 10, wlt[BnameWalletDiamond])
+		}
+	}
+	if data[BnamePlayerEquipments] == nil {
+		t.Error("The value expected not be nil")
+	} else {
+		eqm := data[BnamePlayerEquipments].(map[string]interface{})
+		if 2 != len(eqm) {
+			t.Errorf("The value expected <%v> but was <%v>", 2, len(eqm))
+		}
+		if eqm["12345678-1234-5678-9abc-123456789abc"] == nil {
+			t.Error("The value expected not be nil")
+		} else {
+			eq0 := eqm["12345678-1234-5678-9abc-123456789abc"].(map[string]interface{})
+			if "12345678-1234-5678-9abc-123456789abc" != eq0[BnameEquipmentId] {
+				t.Errorf("The value expected <%v> but was <%v>", "12345678-1234-5678-9abc-123456789abc", eq0[BnameEquipmentId])
+			}
+			if 1001 != eq0[BnameEquipmentRefId] {
+				t.Errorf("The value expected <%v> but was <%v>", 1001, eq0[BnameEquipmentRefId])
+			}
+			if 12 != eq0[BnameEquipmentAtk] {
+				t.Errorf("The value expected <%v> but was <%v>", 12, eq0[BnameEquipmentAtk])
+			}
+			if 0 != eq0[BnameEquipmentDef] {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq0[BnameEquipmentDef])
+			}
+			if 0 != eq0[BnameEquipmentHp] {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq0[BnameEquipmentHp])
+			}
+		}
+		if eqm["11111111-1111-1111-1111-111111111111"] == nil {
+			t.Error("The value expected not be nil")
+		} else {
+			eq1 := eqm["11111111-1111-1111-1111-111111111111"].(map[string]interface{})
+			if "11111111-1111-1111-1111-111111111111" != eq1[BnameEquipmentId] {
+				t.Errorf("The value expected <%v> but was <%v>", "11111111-1111-1111-1111-111111111111", eq1[BnameEquipmentId])
+			}
+			if 1101 != eq1[BnameEquipmentRefId] {
+				t.Errorf("The value expected <%v> but was <%v>", 1101, eq1[BnameEquipmentRefId])
+			}
+			if 0 != eq1[BnameEquipmentAtk] {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq1[BnameEquipmentAtk])
+			}
+			if 6 != eq1[BnameEquipmentDef] {
+				t.Errorf("The value expected <%v> but was <%v>", 6, eq1[BnameEquipmentDef])
+			}
+			if 12 != eq1[BnameEquipmentHp] {
+				t.Errorf("The value expected <%v> but was <%v>", 12, eq1[BnameEquipmentHp])
+			}
+		}
+		if eqm["no such equipment"] != nil {
+			t.Errorf("The value expected nil but was <%v>", eqm["no such equipment"])
+		}
+	}
+	if data[BnamePlayerItems] == nil {
+		t.Error("The value expected not be nil")
+	} else {
+		itm := data[BnamePlayerItems].(map[int]interface{})
+		if 2 != len(itm) {
+			t.Errorf("The value expected <%v> but was <%v>", 2, len(itm))
+		}
+		if 10 != itm[2001] {
+			t.Errorf("The value expected <%v> but was <%v>", 10, itm[2001])
+		}
+		if 1 != itm[2002] {
+			t.Errorf("The value expected <%v> but was <%v>", 1, itm[2002])
+		}
+	}
+	cs := data[BnamePlayerCash].(map[string]interface{})
+	if 3 != len(cs) {
+		t.Errorf("The value expected <%v> but was <%v>", 3, len(cs))
+	}
+	if cs[BnameCashInfoStages] == nil {
+		t.Error("The value expected not be nil")
+	} else {
+		stg := cs[BnameCashInfoStages].(map[int]interface{})
+		if 2 != len(stg) {
+			t.Errorf("The value expected <%v> but was <%v>", 2, len(stg))
+		}
+		if 2 != stg[1] {
+			t.Errorf("The value expected <%v> but was <%v>", 2, stg[1])
+		}
+		if 1 != stg[2] {
+			t.Errorf("The value expected <%v> but was <%v>", 1, stg[2])
+		}
+	}
+	if cs[BnameCashInfoCards] == nil {
+		t.Error("The value expected not be nil")
+	} else {
+		cds := cs[BnameCashInfoCards].([]int)
+		if 2 != len(cds) {
+			t.Errorf("The value expected <%v> but was <%v>", 2, len(cds))
+		} else {
+			if 1 != cds[0] {
+				t.Errorf("The value expected <%v> but was <%v>", 1, cds[0])
+			}
+			if 2 != cds[1] {
+				t.Errorf("The value expected <%v> but was <%v>", 2, cds[1])
+			}
+		}
+	}
+	if cs[BnameCashInfoOrderIds] == nil {
+		t.Error("The value expected not be nil")
+	} else {
+		ois := cs[BnameCashInfoOrderIds].([]string)
+		if 2 != len(ois) {
+			t.Errorf("The value expected <%v> but was <%v>", 2, len(ois))
+		} else {
+			if "order-0" != ois[0] {
+				t.Errorf("The value expected <%v> but was <%v>", "order-0", ois[0])
+			}
+			if "order-1" != ois[1] {
+				t.Errorf("The value expected <%v> but was <%v>", "order-1", ois[1])
+			}
+		}
+	}
+}
+
+func TestToUpdate(t *testing.T) {
+	createTime := time.Now().Add(-1 * time.Hour).Truncate(time.Millisecond)
+	player := NewPlayer()
+	player.SetUid(123)
+	player.Wallet().SetCoinTotal(5000)
+	player.Wallet().SetCoinUsed(2000)
+	player.Wallet().SetDiamond(10)
+	equipment0 := NewEquipment()
+	equipment0.SetId("12345678-1234-5678-9abc-123456789abc")
+	equipment0.SetRefId(1001)
+	equipment0.SetAtk(12)
+	player.Equipments().Put(equipment0.Id(), equipment0)
+	equipment1 := NewEquipment()
+	equipment1.SetId("11111111-1111-1111-1111-111111111111")
+	equipment1.SetRefId(1101)
+	equipment1.SetDef(6)
+	equipment1.SetHp(12)
+	player.Equipments().Put(equipment1.Id(), equipment1)
+	player.Items().Put(2001, 10)
+	player.Items().Put(2002, 1)
+	player.Cash().Stages().Put(1, 2)
+	player.Cash().Stages().Put(2, 1)
+	player.Cash().SetCards([]int{1, 2})
+	player.Cash().SetOrderIds([]string{"order-0", "order-1"})
+	player.SetUpdateVersion(1)
+	player.SetCreateTime(createTime)
+	player.SetUpdateTime(createTime)
+	player.Reset()
+
+	player.Wallet().SetCoinTotal(5200)
+	player.Wallet().SetCoinUsed(2100)
+	player.Wallet().SetDiamond(11)
+	player.Equipments().Remove("12345678-1234-5678-9abc-123456789abc")
+	player.Equipment("11111111-1111-1111-1111-111111111111").SetHp(20)
+	equipment2 := NewEquipment()
+	equipment2.SetId("22222222-2222-2222-2222-222222222222")
+	equipment2.SetRefId(1201)
+	equipment2.SetAtk(2)
+	equipment2.SetDef(2)
+	equipment2.SetHp(2)
+	player.Equipments().Put(equipment2.Id(), equipment2)
+	player.Items().Put(2001, 12)
+	player.Items().Put(2002, 0)
+	player.Items().Put(2003, 1)
+	player.Cash().Stages().Remove(1)
+	player.Cash().SetCards(nil)
+	player.Cash().SetOrderIds([]string{"order-0", "order-1", "order-2"})
+	player.IncreaseUpdateVersion()
+	now := time.Now().Truncate(time.Millisecond)
+	player.SetUpdateTime(now)
+
+	update := player.ToUpdate()
+	if 2 != len(update) {
+		t.Errorf("The value expected <%v> but was <%v>", 2, len(update))
+	}
+	if update["$set"] == nil {
+		t.Error("The value expected not be nil")
+		t.FailNow()
+	}
+	dset := update["$set"].(bson.M)
+	if 11 != len(dset) {
+		t.Errorf("The value expected <%v> but was <%v>", 11, len(dset))
+	}
+	if 5200 != dset["wlt.ct"] {
+		t.Errorf("The value expected <%v> but was <%v>", 5200, dset["wlt.ct"])
+	}
+	if 2100 != dset["wlt.cu"] {
+		t.Errorf("The value expected <%v> but was <%v>", 2100, dset["wlt.cu"])
+	}
+	if 11 != dset["wlt.d"] {
+		t.Errorf("The value expected <%v> but was <%v>", 11, dset["wlt.d"])
+	}
+	if 20 != dset["eqm.11111111-1111-1111-1111-111111111111.hp"] {
+		t.Errorf("The value expected <%v> but was <%v>", 20, dset["eqm.11111111-1111-1111-1111-111111111111.hp"])
+	}
+	if dset["eqm.22222222-2222-2222-2222-222222222222"] == nil {
+		t.Error("The value expected not be nil")
+	} else {
+		eq2 := dset["eqm.22222222-2222-2222-2222-222222222222"].(bson.M)
+		if "22222222-2222-2222-2222-222222222222" != eq2["id"] {
+			t.Errorf("The value expected <%v> but was <%v>", "22222222-2222-2222-2222-222222222222", eq2["id"])
+		}
+		if 1201 != eq2["rid"] {
+			t.Errorf("The value expected <%v> but was <%v>", 1201, eq2["rid"])
+		}
+		if 2 != eq2["atk"] {
+			t.Errorf("The value expected <%v> but was <%v>", 2, eq2["atk"])
+		}
+		if 2 != eq2["def"] {
+			t.Errorf("The value expected <%v> but was <%v>", 2, eq2["def"])
+		}
+		if 2 != eq2["hp"] {
+			t.Errorf("The value expected <%v> but was <%v>", 2, eq2["hp"])
+		}
+	}
+	if 12 != dset["itm.2001"] {
+		t.Errorf("The value expected <%v> but was <%v>", 12, dset["itm.2001"])
+	}
+	if 0 != dset["itm.2002"] {
+		t.Errorf("The value expected <%v> but was <%v>", 0, dset["itm.2002"])
+	}
+	if 1 != dset["itm.2003"] {
+		t.Errorf("The value expected <%v> but was <%v>", 1, dset["itm.2003"])
+	}
+	if dset["cs.ois"] == nil {
+		t.Error("The value expected not be nil")
+	} else {
+		ois := dset["cs.ois"].(bson.A)
+		if 3 != len(ois) {
+			t.Errorf("The value expected <%v> but was <%v>", 3, len(ois))
+		}
+		if "order-0" != ois[0] {
+			t.Errorf("The value expected <%v> but was <%v>", "order-0", ois[0])
+		}
+		if "order-1" != ois[1] {
+			t.Errorf("The value expected <%v> but was <%v>", "order-1", ois[1])
+		}
+		if "order-2" != ois[2] {
+			t.Errorf("The value expected <%v> but was <%v>", "order-2", ois[2])
+		}
+	}
+	if 2 != dset["_uv"] {
+		t.Errorf("The value expected <%v> but was <%v>", 2, dset["_uv"])
+	}
+	if primitive.NewDateTimeFromTime(now) != dset["_ut"] {
+		t.Errorf("The value expected <%v> but was <%v>", primitive.NewDateTimeFromTime(now), dset["_ut"])
+	}
+	if update["$unset"] == nil {
+		t.Error("The value expected not be nil")
+		t.FailNow()
+	}
+	unset := update["$unset"].(bson.M)
+	if 3 != len(unset) {
+		t.Errorf("The value expected <%v> but was <%v>", 3, len(unset))
+	}
+	if "" != unset["eqm.12345678-1234-5678-9abc-123456789abc"] {
+		t.Errorf("The value expected <%v> but was <%v>", "", unset["eqm.12345678-1234-5678-9abc-123456789abc"])
+	}
+	if "" != unset["cs.stg.1"] {
+		t.Errorf("The value expected <%v> but was <%v>", "", unset["cs.stg.1"])
+	}
+	if "" != unset["cs.cs"] {
+		t.Errorf("The value expected <%v> but was <%v>", "", unset["cs.cs"])
 	}
 }

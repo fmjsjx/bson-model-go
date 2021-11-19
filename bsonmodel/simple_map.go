@@ -390,7 +390,7 @@ func (imap *intSimpleMap) AppendUpdates(updates bson.M) bson.M {
 			key := uk.(int)
 			k := strconv.Itoa(key)
 			name := imap.XPath().Resolve(k)
-			unset[name.Value()] = 1
+			unset[name.Value()] = ""
 		}
 	}
 	return updates
@@ -611,7 +611,7 @@ func (smap *stringSimpleMap) AppendUpdates(updates bson.M) bson.M {
 		for _, uk := range removedKeys.ToSlice() {
 			key := uk.(string)
 			name := smap.XPath().Resolve(key)
-			unset[name.Value()] = 1
+			unset[name.Value()] = ""
 		}
 	}
 	return updates

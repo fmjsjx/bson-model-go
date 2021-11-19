@@ -240,6 +240,7 @@ func (self *defaultEquipment) SetRefId(refId int) {
 	if self.refId != refId {
 		self.refId = refId
 		self.updatedFields.Set(2)
+		self.EmitUpdated()
 	}
 }
 
@@ -251,6 +252,7 @@ func (self *defaultEquipment) SetAtk(atk int) {
 	if self.atk != atk {
 		self.atk = atk
 		self.updatedFields.Set(3)
+		self.EmitUpdated()
 	}
 }
 
@@ -262,6 +264,7 @@ func (self *defaultEquipment) SetDef(def int) {
 	if self.def != def {
 		self.def = def
 		self.updatedFields.Set(4)
+		self.EmitUpdated()
 	}
 }
 
@@ -273,6 +276,7 @@ func (self *defaultEquipment) SetHp(hp int) {
 	if self.hp != hp {
 		self.hp = hp
 		self.updatedFields.Set(5)
+		self.EmitUpdated()
 	}
 }
 
@@ -318,4 +322,3 @@ func (codec *equipmentEncoder) Encode(ptr unsafe.Pointer, stream *jsoniter.Strea
 func init() {
 	jsoniter.RegisterTypeEncoder("example.defaultEquipment", &equipmentEncoder{})
 }
-

@@ -47,6 +47,7 @@ type MapValueModel interface {
 	ObjectModel
 	setParent(parent BsonModel)
 	unbind()
+	EmitUpdated()
 }
 
 type baseMapValue struct {
@@ -61,6 +62,7 @@ type mapModel interface {
 	DocumentModel
 	Size() int
 	Clear()
+	emitUpdated(key interface{})
 }
 
 type baseMap struct {
@@ -68,6 +70,10 @@ type baseMap struct {
 	name        string
 	updatedKeys mapset.Set
 	removedKeys mapset.Set
+}
+
+func (smap *baseMap) emitUpdated(key interface{}) {
+	smap.updatedKeys.Add(key)
 }
 
 func (smap *baseMap) AnyUpdated() bool {

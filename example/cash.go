@@ -304,3 +304,4 @@ func (codec *cashInfoEncoder) Encode(ptr unsafe.Pointer, stream *jsoniter.Stream
 func init() {
 	jsoniter.RegisterTypeEncoder("example.defaultCashInfo", &cashInfoEncoder{})
 }
+
