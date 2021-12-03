@@ -1523,6 +1523,27 @@ func TestJsonMarshal(t *testing.T) {
 			t.Errorf("The value expected <%v> but was <%v>", 10, wallet.Get("diamond").ToInt())
 		}
 	}
+	walletValue, err := json.Marshal(player.Wallet())
+	if err != nil {
+		t.Errorf("Unexpected error occurs: %e", err)
+	}
+	wallet = jsoniter.Get(walletValue)
+	if jsoniter.ObjectValue != wallet.ValueType() {
+		t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, wallet.ValueType())
+	} else {
+		if 3 != wallet.Size() {
+			t.Errorf("The value expected <%v> but was <%v>", 3, wallet.Size())
+		}
+		if 5000 != wallet.Get("coinTotal").ToInt() {
+			t.Errorf("The value expected <%v> but was <%v>", 5000, wallet.Get("coinTotal").ToInt())
+		}
+		if 3000 != wallet.Get("coin").ToInt() {
+			t.Errorf("The value expected <%v> but was <%v>", 3000, wallet.Get("coin").ToInt())
+		}
+		if 10 != wallet.Get("diamond").ToInt() {
+			t.Errorf("The value expected <%v> but was <%v>", 10, wallet.Get("diamond").ToInt())
+		}
+	}
 	equipments := any.Get("equipments")
 	if jsoniter.ObjectValue != equipments.ValueType() {
 		t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, equipments.ValueType())
@@ -1531,6 +1552,118 @@ func TestJsonMarshal(t *testing.T) {
 			t.Errorf("The value expected <%v> but was <%v>", 2, equipments.Size())
 		}
 		eq0 := equipments.Get("12345678-1234-5678-9abc-123456789abc")
+		if jsoniter.ObjectValue != eq0.ValueType() {
+			t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, eq0.ValueType())
+		} else {
+			if 5 != eq0.Size() {
+				t.Errorf("The value expected <%v> but was <%v>", 5, eq0.Size())
+			}
+			if "12345678-1234-5678-9abc-123456789abc" != eq0.Get("id").ToString() {
+				t.Errorf("The value expected <%v> but was <%v>", "12345678-1234-5678-9abc-123456789abc", eq0.Get("id").ToString())
+			}
+			if 1001 != eq0.Get("refId").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 1001, eq0.Get("refId").ToInt())
+			}
+			if 12 != eq0.Get("atk").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 12, eq0.Get("atk").ToInt())
+			}
+			if 0 != eq0.Get("def").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq0.Get("def").ToInt())
+			}
+			if 0 != eq0.Get("hp").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq0.Get("hp").ToInt())
+			}
+		}
+		eq0Value, err := json.Marshal(player.Equipments().Get("12345678-1234-5678-9abc-123456789abc"))
+		if err != nil {
+			t.Errorf("Unexpected error occurs: %e", err)
+		}
+		eq0 = jsoniter.Get(eq0Value)
+		if jsoniter.ObjectValue != eq0.ValueType() {
+			t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, eq0.ValueType())
+		} else {
+			if 5 != eq0.Size() {
+				t.Errorf("The value expected <%v> but was <%v>", 5, eq0.Size())
+			}
+			if "12345678-1234-5678-9abc-123456789abc" != eq0.Get("id").ToString() {
+				t.Errorf("The value expected <%v> but was <%v>", "12345678-1234-5678-9abc-123456789abc", eq0.Get("id").ToString())
+			}
+			if 1001 != eq0.Get("refId").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 1001, eq0.Get("refId").ToInt())
+			}
+			if 12 != eq0.Get("atk").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 12, eq0.Get("atk").ToInt())
+			}
+			if 0 != eq0.Get("def").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq0.Get("def").ToInt())
+			}
+			if 0 != eq0.Get("hp").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq0.Get("hp").ToInt())
+			}
+		}
+		eq1 := equipments.Get("11111111-1111-1111-1111-111111111111")
+		if jsoniter.ObjectValue != eq1.ValueType() {
+			t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, eq1.ValueType())
+		} else {
+			if 5 != eq1.Size() {
+				t.Errorf("The value expected <%v> but was <%v>", 5, eq1.Size())
+			}
+			if "11111111-1111-1111-1111-111111111111" != eq1.Get("id").ToString() {
+				t.Errorf("The value expected <%v> but was <%v>", "11111111-1111-1111-1111-111111111111", eq1.Get("id").ToString())
+			}
+			if 1101 != eq1.Get("refId").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 1101, eq1.Get("refId").ToInt())
+			}
+			if 0 != eq1.Get("atk").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq1.Get("atk").ToInt())
+			}
+			if 6 != eq1.Get("def").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 6, eq1.Get("def").ToInt())
+			}
+			if 12 != eq1.Get("hp").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 12, eq1.Get("hp").ToInt())
+			}
+		}
+	}
+	equipmentsValue, err := json.Marshal(player.Equipments())
+	if err != nil {
+		t.Errorf("Unexpected error occurs: %e", err)
+	}
+	equipments = jsoniter.Get(equipmentsValue)
+	if jsoniter.ObjectValue != equipments.ValueType() {
+		t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, equipments.ValueType())
+	} else {
+		if 2 != equipments.Size() {
+			t.Errorf("The value expected <%v> but was <%v>", 2, equipments.Size())
+		}
+		eq0 := equipments.Get("12345678-1234-5678-9abc-123456789abc")
+		if jsoniter.ObjectValue != eq0.ValueType() {
+			t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, eq0.ValueType())
+		} else {
+			if 5 != eq0.Size() {
+				t.Errorf("The value expected <%v> but was <%v>", 5, eq0.Size())
+			}
+			if "12345678-1234-5678-9abc-123456789abc" != eq0.Get("id").ToString() {
+				t.Errorf("The value expected <%v> but was <%v>", "12345678-1234-5678-9abc-123456789abc", eq0.Get("id").ToString())
+			}
+			if 1001 != eq0.Get("refId").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 1001, eq0.Get("refId").ToInt())
+			}
+			if 12 != eq0.Get("atk").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 12, eq0.Get("atk").ToInt())
+			}
+			if 0 != eq0.Get("def").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq0.Get("def").ToInt())
+			}
+			if 0 != eq0.Get("hp").ToInt() {
+				t.Errorf("The value expected <%v> but was <%v>", 0, eq0.Get("hp").ToInt())
+			}
+		}
+		eq0Value, err := json.Marshal(player.Equipments().Get("12345678-1234-5678-9abc-123456789abc"))
+		if err != nil {
+			t.Errorf("Unexpected error occurs: %e", err)
+		}
+		eq0 = jsoniter.Get(eq0Value)
 		if jsoniter.ObjectValue != eq0.ValueType() {
 			t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, eq0.ValueType())
 		} else {
@@ -1578,6 +1711,24 @@ func TestJsonMarshal(t *testing.T) {
 		}
 	}
 	items := any.Get("items")
+	if jsoniter.ObjectValue != items.ValueType() {
+		t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, items.ValueType())
+	} else {
+		if 2 != items.Size() {
+			t.Errorf("The value expected <%v> but was <%v>", 2, items.Size())
+		}
+		if 10 != items.Get("2001").ToInt() {
+			t.Errorf("The value expected <%v> but was <%v>", 10, items.Get("2001").ToInt())
+		}
+		if 1 != items.Get("2002").ToInt() {
+			t.Errorf("The value expected <%v> but was <%v>", 1, items.Get("2002").ToInt())
+		}
+	}
+	itemsValue, err := json.Marshal(player.Items())
+	if err != nil {
+		t.Errorf("Unexpected error occurs: %e", err)
+	}
+	items = jsoniter.Get(itemsValue)
 	if jsoniter.ObjectValue != items.ValueType() {
 		t.Errorf("The value expected <%v> but was <%v>", jsoniter.ObjectValue, items.ValueType())
 	} else {
