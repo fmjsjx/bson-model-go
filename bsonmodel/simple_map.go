@@ -1,6 +1,7 @@
 package bsonmodel
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -264,6 +265,10 @@ type intSimpleMap struct {
 	data map[int]interface{}
 }
 
+func (imap *intSimpleMap) MarshalJSON() ([]byte, error) {
+	return json.Marshal(imap.data)
+}
+
 func (imap *intSimpleMap) Size() int {
 	return len(imap.data)
 }
@@ -490,6 +495,10 @@ type StringSimpleMapModel interface {
 type stringSimpleMap struct {
 	baseSimpleMap
 	data map[string]interface{}
+}
+
+func (smap *stringSimpleMap) MarshalJSON() ([]byte, error) {
+	return json.Marshal(smap.data)
 }
 
 func (smap *stringSimpleMap) Size() int {

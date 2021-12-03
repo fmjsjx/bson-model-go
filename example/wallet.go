@@ -188,6 +188,10 @@ func (self *defaultWallet) ToDeleteJson() (string, error) {
 	return jsoniter.MarshalToString(self.ToDelete())
 }
 
+func (self *defaultWallet) MarshalJSON() ([]byte, error) {
+	return jsoniter.Marshal(self)
+}
+
 func (self *defaultWallet) CoinTotal() int {
 	return self.coinTotal
 }

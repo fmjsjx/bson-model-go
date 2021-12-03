@@ -221,6 +221,10 @@ func (self *defaultEquipment) ToDeleteJson() (string, error) {
 	return jsoniter.MarshalToString(self.ToDelete())
 }
 
+func (self *defaultEquipment) MarshalJSON() ([]byte, error) {
+	return jsoniter.Marshal(self)
+}
+
 func (self *defaultEquipment) Id() string {
 	return self.id
 }

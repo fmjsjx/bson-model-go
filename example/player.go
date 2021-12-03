@@ -352,6 +352,10 @@ func (self *defaultPlayer) MarshalToJsonString() (string, error) {
 	return jsoniter.MarshalToString(self)
 }
 
+func (self *defaultPlayer) MarshalJSON() ([]byte, error) {
+	return jsoniter.Marshal(self)
+}
+
 func (self *defaultPlayer) Uid() int {
 	return self.uid
 }

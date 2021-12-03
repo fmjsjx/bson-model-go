@@ -253,6 +253,10 @@ func (self *defaultCashInfo) ToDeleteJson() (string, error) {
 	return jsoniter.MarshalToString(self.ToDelete())
 }
 
+func (self *defaultCashInfo) MarshalJSON() ([]byte, error) {
+	return jsoniter.Marshal(self)
+}
+
 func (self *defaultCashInfo) Stages() bsonmodel.IntSimpleMapModel {
 	return self.stages
 }

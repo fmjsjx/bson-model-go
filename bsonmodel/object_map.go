@@ -1,6 +1,7 @@
 package bsonmodel
 
 import (
+	"encoding/json"
 	"strconv"
 	"unsafe"
 
@@ -66,6 +67,10 @@ type intObjectMap struct {
 	baseMap
 	valueFactory IntObjectMapValueFactory
 	data         map[int]IntObjectMapValueModel
+}
+
+func (imap *intObjectMap) MarshalJSON() ([]byte, error) {
+	return json.Marshal(imap.data)
 }
 
 func (imap *intObjectMap) Size() int {
@@ -365,6 +370,10 @@ type stringObjectMap struct {
 	baseMap
 	valueFactory StringObjectMapValueFactory
 	data         map[string]StringObjectMapValueModel
+}
+
+func (smap *stringObjectMap) MarshalJSON() ([]byte, error) {
+	return json.Marshal(smap.data)
 }
 
 func (smap *stringObjectMap) Size() int {

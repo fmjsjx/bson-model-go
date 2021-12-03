@@ -1166,6 +1166,9 @@ def generate_root(cfg)
   code << "func (self *default#{cfg['name']}) MarshalToJsonString() (string, error) {\n"
   code << tabs(1, "return jsoniter.MarshalToString(self)")
   code << "}\n\n"
+  code << "func (self *default#{cfg['name']}) MarshalJSON() ([]byte, error) {\n"
+  code << tabs(1, "return jsoniter.Marshal(self)")
+  code << "}\n\n"
   fill_xetters(code, cfg)
   fill_new(code, cfg)
   small_camel = to_small_camel(cfg['name'])
@@ -1226,6 +1229,9 @@ def generate_object(cfg)
   fill_to_sync(code, cfg)
   fill_to_delete(code, cfg)
   fill_to_x_json(code, cfg)
+  code << "func (self *default#{cfg['name']}) MarshalJSON() ([]byte, error) {\n"
+  code << tabs(1, "return jsoniter.Marshal(self)")
+  code << "}\n\n"
   fill_xetters(code, cfg)
   fill_new(code, cfg, true)
   fill_encoder(code, cfg)
@@ -1253,6 +1259,9 @@ def generate_map_value(cfg)
   fill_to_sync(code, cfg)
   fill_to_delete(code, cfg)
   fill_to_x_json(code, cfg)
+  code << "func (self *default#{cfg['name']}) MarshalJSON() ([]byte, error) {\n"
+  code << tabs(1, "return jsoniter.Marshal(self)")
+  code << "}\n\n"
   fill_xetters(code, cfg)
   fill_new(code, cfg)
   small_camel = to_small_camel(cfg['name'])
