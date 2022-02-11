@@ -1282,6 +1282,9 @@ parents = Hash.new
 bnames = Hash.new
 map_models = Set.new
 
+if cfg.has_key? 'go-package'
+  cfg['package'] = cfg['go-package']
+end
 unless cfg.has_key? 'package'
   raise "missing required field `package`"
 end
@@ -1316,7 +1319,10 @@ cfg['objects'].each do |model|
         end
       end
     end
-    if field['type'] == 'map'
+    if field['type'] == 'long'
+      # Compatible with java
+      field['type'] = 'int'
+    elsif field['type'] == 'map'
       map_models << field['value']
     end
   end
