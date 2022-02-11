@@ -1,4 +1,4 @@
-package: example
+go-package: example
 
 objects:
 - name: Player
@@ -57,7 +57,7 @@ objects:
     formula: self.coinTotal - self.coinUsed
   - name: diamond
     bname: d
-    type: int
+    type: long
 - name: Equipment
   type: map-value
   key: string
